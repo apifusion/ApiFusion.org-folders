@@ -1,0 +1,6 @@
+DirectoryIndex index.xml index.html index.php
+RewriteEngine on
+
+ErrorDocument 404 /af/ns/404.php
+
+
