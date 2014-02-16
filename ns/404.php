@@ -10,16 +10,21 @@ $ns 	= preg_replace($regEx, '${2}', $url );
 $page 	= preg_replace($regEx, '${3}', $url );
 //echo $webApp . ":" . $ns . ":" . $page;
 
-$uri = $webApp . '/wiki/index.php?title=' . $ns . ':' . $page;
+$wikiPage = 'api.php';
+//$uri = $webApp . '/wiki/index.php?title=' . $ns . ':' . $page;
+$uri = $webApp . '/wiki/' . $wikiPage . '?action=parse&format=xml&page=' . $ns . '%3A' . $page;
 //$_GET = array();
-$_GET['title'] = $ns . ":" . $page;
+$_GET['page'] = $ns . ":" . $page;
+$_GET['action'] = 'parse';
+$_GET['format'] = 'xml';
 $_SERVER["REQUEST_URI"] = $uri;
-$_SERVER["SCRIPT_NAME"] = $webApp . '/wiki/index.php';
-$_SERVER["PHP_SELF"] = $webApp . '/wiki/index.php';
+//$_SERVER["SCRIPT_NAME"] = $webApp . '/wiki/' . $wikiPage;
+//$_SERVER["PHP_SELF"] = $webApp . '/wiki/' . $wikiPage;
  
+//echo $uri;
 $wikiPath = realpath(__DIR__ . '/../wiki');
 putenv("MW_INSTALL_PATH=" . $wikiPath);
-require_once '../wiki/index.php';
+require_once '../wiki/' . $wikiPage;
 
 //phpinfo();
 
