@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<api>
+	<query>
+		<namespaces>
+			<ns id="-2" case="first-letter" canonical="Media" xml:space="preserve">Media</ns>
+			<ns id="-1" case="first-letter" canonical="Special" xml:space="preserve">Special</ns>
+			<ns id="0" case="first-letter" content="" xml:space="preserve" />
+			<ns id="1" case="first-letter" subpages="" canonical="Talk" xml:space="preserve">Talk</ns>
+			<ns id="2" case="first-letter" subpages="" canonical="User" xml:space="preserve">User</ns>
+			<ns id="3" case="first-letter" subpages="" canonical="User talk" xml:space="preserve">User talk</ns>
+			<ns id="4" case="first-letter" subpages="" canonical="Project" xml:space="preserve">ApiFusion</ns>
+			<ns id="5" case="first-letter" subpages="" canonical="Project talk" xml:space="preserve">ApiFusion talk</ns>
+			<ns id="6" case="first-letter" canonical="File" xml:space="preserve">File</ns>
+			<ns id="7" case="first-letter" subpages="" canonical="File talk" xml:space="preserve">File talk</ns>
+			<ns id="8" case="first-letter" subpages="" canonical="MediaWiki" xml:space="preserve">MediaWiki</ns>
+			<ns id="9" case="first-letter" subpages="" canonical="MediaWiki talk" xml:space="preserve">MediaWiki talk</ns>
+			<ns id="10" case="first-letter" canonical="Template" xml:space="preserve">Template</ns>
+			<ns id="11" case="first-letter" subpages="" canonical="Template talk" xml:space="preserve">Template talk</ns>
+			<ns id="12" case="first-letter" subpages="" canonical="Help" xml:space="preserve">Help</ns>
+			<ns id="13" case="first-letter" subpages="" canonical="Help talk" xml:space="preserve">Help talk</ns>
+			<ns id="14" case="first-letter" canonical="Category" xml:space="preserve">Category</ns>
+			<ns id="15" case="first-letter" subpages="" canonical="Category talk" xml:space="preserve">Category talk</ns>
+			<ns id="500" case="first-letter" subpages="" canonical="Foo" xml:space="preserve">Foo</ns>
+			<ns id="501" case="first-letter" canonical="Foo talk" xml:space="preserve">Foo talk</ns>
+			<ns id="8300" case="first-letter" subpages="" canonical="Requirements" xml:space="preserve">Requirements</ns>
+			<ns id="8301" case="first-letter" subpages="" canonical="Requirements talk" xml:space="preserve">Requirements talk</ns>
+			<ns id="8310" case="first-letter" subpages="" canonical="WishList" xml:space="preserve">WishList</ns>
+			<ns id="8311" case="first-letter" subpages="" canonical="WishList talk" xml:space="preserve">WishList talk</ns>
+			<ns id="8320" case="first-letter" subpages="" canonical="ToDo" xml:space="preserve">ToDo</ns>
+			<ns id="8321" case="first-letter" subpages="" canonical="ToDo talk" xml:space="preserve">ToDo talk</ns>
+			<ns id="8330" case="first-letter" subpages="" canonical="Design" xml:space="preserve">Design</ns>
+			<ns id="8331" case="first-letter" subpages="" canonical="Design talk" xml:space="preserve">Design talk</ns>
+			<ns id="8340" case="first-letter" subpages="" canonical="Implementation" xml:space="preserve">Implementation</ns>
+			<ns id="8341" case="first-letter" subpages="" canonical="Implementation talk" xml:space="preserve">Implementation talk</ns>
+			<ns id="8350" case="first-letter" subpages="" canonical="FAQ" xml:space="preserve">FAQ</ns>
+			<ns id="8351" case="first-letter" subpages="" canonical="FAQ talk" xml:space="preserve">FAQ talk</ns>
+			<ns id="8360" case="first-letter" subpages="" canonical="HowTo" xml:space="preserve">HowTo</ns>
+			<ns id="8361" case="first-letter" subpages="" canonical="HowTo talk" xml:space="preserve">HowTo talk</ns>
+			<ns id="8370" case="first-letter" subpages="" canonical="Sources" xml:space="preserve">Sources</ns>
+			<ns id="8371" case="first-letter" subpages="" canonical="Sources talk" xml:space="preserve">Sources talk</ns>
+			<ns id="8380" case="first-letter" subpages="" canonical="Binaries" xml:space="preserve">Binaries</ns>
+			<ns id="8381" case="first-letter" subpages="" canonical="Binaries talk" xml:space="preserve">Binaries talk</ns>
+			<ns id="8390" case="first-letter" subpages="" canonical="Demo" xml:space="preserve">Demo</ns>
+			<ns id="8391" case="first-letter" subpages="" canonical="Demo talk" xml:space="preserve">Demo talk</ns>
+			<ns id="8400" case="first-letter" subpages="" canonical="Test" xml:space="preserve">Test</ns>
+			<ns id="8401" case="first-letter" subpages="" canonical="Test talk" xml:space="preserve">Test talk</ns>
+			<ns id="8410" case="first-letter" subpages="" canonical="TestResult" xml:space="preserve">TestResult</ns>
+			<ns id="8411" case="first-letter" subpages="" canonical="TestResult talk" xml:space="preserve">TestResult talk</ns>
+			<ns id="8420" case="first-letter" subpages="" canonical="DesignReview" xml:space="preserve">DesignReview</ns>
+			<ns id="8421" case="first-letter" subpages="" canonical="DesignReview talk" xml:space="preserve">DesignReview talk</ns>
+			<ns id="8430" case="first-letter" subpages="" canonical="ImplementationReview" xml:space="preserve">ImplementationReview</ns>
+			<ns id="8431" case="first-letter" subpages="" canonical="ImplementationReview talk" xml:space="preserve">ImplementationReview talk</ns>
+			<ns id="8440" case="first-letter" subpages="" canonical="SecurityReview" xml:space="preserve">SecurityReview</ns>
+			<ns id="8441" case="first-letter" subpages="" canonical="SecurityReview talk" xml:space="preserve">SecurityReview talk</ns>
+			<ns id="8450" case="first-letter" subpages="" canonical="Compatibility" xml:space="preserve">Compatibility</ns>
+			<ns id="8451" case="first-letter" subpages="" canonical="Compatibility talk" xml:space="preserve">Compatibility talk</ns>
+			<ns id="8460" case="first-letter" subpages="" canonical="License" xml:space="preserve">License</ns>
+			<ns id="8461" case="first-letter" subpages="" canonical="License talk" xml:space="preserve">License talk</ns>
+			<ns id="8470" case="first-letter" subpages="" canonical="CLA" xml:space="preserve">CLA</ns>
+			<ns id="8471" case="first-letter" subpages="" canonical="CLA talk" xml:space="preserve">CLA talk</ns>
+			<ns id="8480" case="first-letter" subpages="" canonical="Support" xml:space="preserve">Support</ns>
+			<ns id="8481" case="first-letter" subpages="" canonical="Support talk" xml:space="preserve">Support talk</ns>
+			<ns id="8490" case="first-letter" subpages="" canonical="Contributors" xml:space="preserve">Contributors</ns>
+			<ns id="8491" case="first-letter" subpages="" canonical="Contributors talk" xml:space="preserve">Contributors talk</ns>
+		</namespaces>
+	</query>
+</api>
