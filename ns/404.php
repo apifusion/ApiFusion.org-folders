@@ -11,14 +11,12 @@ if( '/' == substr($url,-1) )
     $url = substr($url,0,-1);
 
 $regEx = '/(.*)\/ns\/([^\/]*)\/(.*)/';
-//echo $regEx . "<hr/>";
+
 $webApp = preg_replace($regEx, '${1}', $url );
 $ns 	= preg_replace($regEx, '${2}', $url );
 $page 	= preg_replace($regEx, '${3}', $url );
-//echo $webApp . ":" . $ns . ":" . $page;
 
 $wikiPage = 'api.php';
-//$uri = $webApp . '/wiki/index.php?title=' . $ns . ':' . $page;
 $uri = $webApp . '/wiki/' . $wikiPage . '?action=parse&format=xml&page=' . $ns . '%3A' . $page;
 //$_GET = array();
 $_GET['page'] = $ns . ":" . $page;
@@ -32,32 +30,35 @@ $wikiPath = realpath(__DIR__ . '/../wiki');
 putenv("MW_INSTALL_PATH=" . $wikiPath);
 
 $fdir = realpath( __DIR__ . $ns . '/' . $page);
-$xslPath = preg_replace("/[^\/]*\//", "../", $page. '/') . '../../ui/page.xsl';
+$relAppRoot = preg_replace("/[^\/]*\//", "../", $page. '/') . '../../';
+$xslPath = $relAppRoot . 'ui/page.xsl';
 
 ob_start();
 require_once '../wiki/' . $wikiPage;
 $apiXml = ob_get_clean();
-
+$apiXml = html_entity_decode( substr($apiXml, strpos($apiXml,'?>')+2) );
 $xml = '<?xml version="1.0"  encoding="utf-8"?>' . "\r\n"
 	. '<?xml-stylesheet type="text/xsl" href="'. xmlEncode($xslPath) . '"?>'. "\r\n"
-	. '<ApiFusion>'. "\r\n"
-	. '	<wikiApiUrl>' . xmlEncode($uri) .'</wikiApiUrl>'. "\r\n"
-	. substr($apiXml, strpos($apiXml,'?>')+2) . "\r\n"
-	. '</ApiFusion>';
+	. '<ApiFusion><ApiFusionSection wikiApiUrl="' . xmlEncode($uri) . '"  '. "\r\n"
+		.'	ns="' . xmlEncode($ns) . '" '. "\r\n"
+		.'	page="' . xmlEncode($page) . '" '. "\r\n"
+		.'	relAppRoot="' . xmlEncode($relAppRoot) . '" >'. "\r\n"
+	. $apiXml . "\r\n"
+	. '</ApiFusionSection></ApiFusion>';
 
-$fdir =  __DIR__ .'/'. $ns . '/' . $page;
+// TODO error if $ns missed in namespaces.xml
 
 if( strpos($apiXml, 'missingtitle') === false )
 {
-    mkdir( $fdir,  0777, true );
+    $fdir =  __DIR__ .'/'. $ns . '/' . $page;
+	mkdir( $fdir,  0777, true );
     $xmlFileName = $fdir . '/' . $AF_defXmlName;
-    $f = fopen( $xmlFileName, 'w');
-    fwrite( $f, $xml );
-    fclose( $f );
+	$f = fopen( $xmlFileName, 'w');
+	fwrite( $f, $xml );
+	fclose( $f );
 }
 
-//echo $xml;
-header('Location: ' . $url . '/', true, 301);
+//header('Location: ' . $url . '/', true, 301);
 
 function xmlEncode($str)
 {
