@@ -1,0 +1,21 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Wiki integration</title>
+</head>
+<body>
+<h1>Wiki integration</h1>
+<ol>
+	<li>
+		Edit <a href="http://localhost:8480/af/wiki/index.php?title=MediaWiki:Common.js&action=edit">MediaWiki:Common.js</a> (replace localhost with deployment host name and wiki URL)
+	</li>
+	<li>
+<pre>/* Any JavaScript here will be loaded for all users on every page load. */
+var dojoConfig = {   async: true,   packages:        [{      name: "af", location: "http://localhost/af"  }],   deps:["af/ui/WikiSideBar/WikiSideBar"]};
+mw.loader.load("http://ajax.googleapis.com/ajax/libs/dojo/1.10.1/dojo/dojo.js","text/javascript",true);
+</pre>	
+	</li>
+</ol>
+</body>
+</html>
