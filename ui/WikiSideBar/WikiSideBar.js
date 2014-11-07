@@ -1,6 +1,7 @@
 define([ "dojo/query"	, "dojo/request", "dojo/_base/array"	,"dojo/store/Memory"	, "dijit/tree/ObjectStoreModel"	, "dijit/Tree"	, "dijit/form/CheckBox"	, "dojo/ready" ]
 , function( $			, request		, array					, Memory				, ObjectStoreModel				, Tree			, CheckBox				, ready )
 {
+	var DEFNS = 'Default';
 	ready( function()
 	{
 		var afRoot = "/af/"
@@ -17,21 +18,21 @@ define([ "dojo/query"	, "dojo/request", "dojo/_base/array"	,"dojo/store/Memory"	
 	function
 populateNS( xml )
 {
-	var d = [{ id:"Default",name:"Default" }]
+	var d = [{ id:"Root",name:"Root" }, {id:0,parent:'Root', name:DEFNS, canonical:''}]
 	,	o = {};
 
 	array.forEach( xml.getElementsByTagName("ns"), function(el)
 	{	var e = {};
 		array.forEach( el.attributes, function( a ){ e[a.name] = a.value; });
 		e.name		= e.canonical;
-		e.parent	= e.category || 'Default';
+		e.parent	= e.category || DEFNS;
 
 		var id = e.id * 1;
-		if( id<1 || id&1 )
+		if( id < 1000 || id&1 )
 			return;
 		var cat = e.category;
 		if( cat && !( cat in o ) )
-			d.push( o[cat] = {id:cat,name:cat,parent:'Default'} );
+			d.push( o[cat] = {id:cat,name:cat,parent:'Root'} );
 		d.push(e);
 	});
 	
@@ -45,22 +46,28 @@ populateNS( xml )
 
     var myModel = new ObjectStoreModel(
 	{   store: myStore
-    ,   query: {id: 'Default'}
+    ,   query: {id: 'Root'}
 	,	mayHaveChildren: function(o)
 		{
-			return o.id == o.name;
+			return o.id == o.name && o.id!=DEFNS;
 		}
     });
 
-    var tree = new Tree
+    var curNS	=  mw.config.get( 'wgPageName' ).split(':')[0]
+	,	tree	= new Tree
 	({  model	: myModel
 	,	showRoot: false
 	,	getIconClass: function(){return "";}
 	,	_createTreeNode: function(args)
 			{
-				var ret = new dijit._TreeNode(args);
-				ret.labelNode.innerHTML = args.label;
-
+				var ret = new dijit._TreeNode(args)
+				,	o	= args.item
+				,	ns  = o.id
+				,	name= o.name;
+				if( o.id != o.name )
+				{	ret.labelNode.innerHTML = '<a href="'+location.pathname.replace( curNS+':', name+':').replace('Default:','')+'">'+name+'</a>';
+					$("a",ret.labelNode).on('click',function(){location.href=this.href;});
+				}
 				var cb = new CheckBox(
 				{	onChange: function(b)
 					{ 
@@ -72,8 +79,10 @@ populateNS( xml )
 
 				return ret;
 			}
-    });
-    tree.placeAt( $("#p-Namespaces-label a")[0] );
+    },  $("#p-Namespaces div ul")[0] );
+
+	$("#p-Namespaces>div")[0].setAttribute("style","display: block; margin: 0px;");
+
     tree.startup();
 }
 });
