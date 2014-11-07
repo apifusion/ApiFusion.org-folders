@@ -18,8 +18,10 @@ define([ "dojo/query"	, "dojo/request", "dojo/_base/array"	,"dojo/store/Memory"	
 	function
 populateNS( xml )
 {
-	var d = [{ id:"Root",name:"Root" }, {id:0,parent:'Root', name:DEFNS, canonical:''}]
-	,	o = {};
+	var d = [{ id:"Root",name:'Root' }, {id:0,parent:'Root', name:DEFNS, canonical:''}]
+	,	o = {}
+	,	curNS =  mw.config.get( 'wgPageName' ).split(':')[0]
+	,	curPath = ['Root'];
 
 	array.forEach( xml.getElementsByTagName("ns"), function(el)
 	{	var e = {};
@@ -33,6 +35,10 @@ populateNS( xml )
 		var cat = e.category;
 		if( cat && !( cat in o ) )
 			d.push( o[cat] = {id:cat,name:cat,parent:'Root'} );
+		if( e.name == curNS )
+		{	curPath.push(cat);
+			curPath.push(e.id);
+		}
 		d.push(e);
 	});
 	
@@ -53,8 +59,7 @@ populateNS( xml )
 		}
     });
 
-    var curNS	=  mw.config.get( 'wgPageName' ).split(':')[0]
-	,	tree	= new Tree
+    var tree	= new Tree
 	({  model	: myModel
 	,	showRoot: false
 	,	getIconClass: function(){return "";}
@@ -68,10 +73,12 @@ populateNS( xml )
 				{	ret.labelNode.innerHTML = '<a href="'+location.pathname.replace( curNS+':', name+':').replace('Default:','')+'">'+name+'</a>';
 					$("a",ret.labelNode).on('click',function(){location.href=this.href;});
 				}
+				if( name == curNS )
+					curNode = ret;
+
 				var cb = new CheckBox(
 				{	onChange: function(b)
-					{ 
-						ret.item.selected = b;
+					{	ret.item.selected = b;
 						console.log( ret.item, b );
 					}
 				});
@@ -83,6 +90,10 @@ populateNS( xml )
 
 	$("#p-Namespaces>div")[0].setAttribute("style","display: block; margin: 0px;");
 
+
+//	curNode && tree.focusNode(curNode);
+//	tree.attr('path', ['Root','Documents','8320']);
+	tree.attr('path', curPath);
     tree.startup();
 }
 });
