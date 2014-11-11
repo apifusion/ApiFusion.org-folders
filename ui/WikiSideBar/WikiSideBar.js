@@ -48,9 +48,9 @@ populatePages( arr )
 	
 	var myStore = new Memory(
 	{   data: d
-	,   getChildren: function(object)
+	,   getChildren: function(o)
 		{	
-			return this.query({parent: object.id});	
+			return this.query({parent: o.id});	
 		}
     });
 
@@ -59,7 +59,7 @@ populatePages( arr )
     ,   query: { id: 'Root'}
 	,	mayHaveChildren: function(o)
 		{
-			return true;//o.id == o.name && o.id!=DEFNS;
+			return !!myStore.query({parent: o.id}).length;
 		}
     });
 	createTree( "#p-Pages div ul", myModel, curPath  );
