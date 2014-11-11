@@ -1,0 +1,9 @@
+#p-Organisations>div,
+#p-Projects>div,
+#p-Pages>div,
+#p-Namespaces>div{ display: block; margin: 0px !important;}
+.claro .dijitTreeNode 
+{
+	font-size: 12px;
+}
+
