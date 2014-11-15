@@ -7,3 +7,8 @@
 	font-size: 12px;
 }
 
+#p-Organisations	.dijitTreeExpando ,
+#p-Projects			.dijitTreeExpando { visibility:hidden; }
+
+#p-Organisations:hover	.dijitTreeExpando ,
+#p-Projects:hover		.dijitTreeExpando { visibility:visible; }

@@ -1,10 +1,12 @@
-define([ "dojo/query"	, "dojo/request",	"dojo/_base/array"	,"dojo/store/Memory"	, "dijit/tree/ObjectStoreModel"	, "dijit/Tree"	, "dijit/form/CheckBox"	, "dojo/ready" ]
-, function( $			, request		,	array				, Memory				, ObjectStoreModel				, Tree			, CheckBox				, ready )
+define([ "dojo/query"	, "dojo/request",	"dojo/_base/array"	,"dojo/store/Memory"	,"dojo/store/JsonRest"	,"dijit/tree/ObjectStoreModel"	, "dijit/Tree"	, "dijit/form/CheckBox"	,"dijit/tree/dndSource"	, "dojo/ready" ]
+, function( $			, request		,	array				, Memory				, JsonRest				,ObjectStoreModel				, Tree			, CheckBox				, dndSource				, ready )
 {
+
 	var DEFNS = 'Default'
 	,	curNS	= mw.config.get( 'wgCanonicalNamespace' ) || DEFNS
 	,	afRoot	= mw.config.get( 'wgScriptPath' )+"/../"
-	,	pageTitle = mw.config.get( 'wgTitle' );
+	,	pageTitle	= mw.config.get( 'wgTitle' )
+	,	pages		= pageTitle.split('/');
 
 	ready( function()
 	{
@@ -15,55 +17,74 @@ define([ "dojo/query"	, "dojo/request",	"dojo/_base/array"	,"dojo/store/Memory"	
 		document.getElementsByTagName("head")[0].appendChild(css)
   		document.body.className += " claro";
 
+		createPagesTree("#p-Organisations div ul"	,getRoot( "Main_Page"	),[ "Main_Page"		, getPageId(0) ] );
+		createPagesTree("#p-Projects div ul"		,getRoot( getPageId(0)	),[ getPageId(0)	, getPageId(1) ] );
+		createPagesTree("#p-Pages div ul"			,getRoot( getPageId(1)	), pathToCurrent() );
 		request( afRoot+"ns/Namespaces.xml", {handleAs:"xml"} ).then( populateNS );
-		request( afRoot+"php/Pages.php?title="+pageTitle, {handleAs:"json"} ).then( populatePages );
     });
 	return {};
 
-	function
-populatePages( arr )
+	function 
+createPagesTree(cssSelector, getRoot, curPath)
 {
-	var d = [{ id:"Root",name:'Root' }]
-	,	np = pageTitle.split('/')
-	,	curPath = [];
-
-	while( np.length )
-	{	
-		curPath.splice(0,0, np.join('/') );
-		np.pop();
-	}
-	curPath.splice(0,0,'Root');
-
-	array.forEach( arr, function(el)
-	{	var p	 = el.page_title.split('/')
-		,	name = p.pop()
-		,	par	 = p.join('/')
-		,	e	 = { id: el.page_title, name: name, parent: par || 'Root' };
-		
-		for( var k in el )
-			e[k] = el[k];
-
-		d.push(e);
-	});
-	
-	var myStore = new Memory(
-	{   data: d
-	,   getChildren: function(o)
-		{	
-			return this.query({parent: o.id});	
-		}
-    });
-
-    var myModel = new ObjectStoreModel(
-	{   store: myStore
-    ,   query: { id: 'Root'}
-	,	mayHaveChildren: function(o)
+    var model = new JsonRest(
+	{	target:afRoot+"php/Pages.php?title="
+	,	_getTarget: function(id){ return this.target+id; }
+	,	idProperty: "page_title"
+	,	mayHaveChildren: function(o){  return o.childrenCount*1 >0; }
+	,	getChildren: function(object, onComplete, onError)
 		{
-			return !!myStore.query({parent: o.id}).length;
+			this.get(object.page_title).then(function(fullObject)
+			{   object.children = fullObject.children;
+				onComplete(fullObject.children);
+			}, onError);
 		}
-    });
-	createTree( "#p-Pages div ul", myModel, curPath  );
+	,	getRoot: getRoot
+	,	getLabel: function(o)
+		{
+			return o.page_title.split('/').pop();
+		}
+	});
+    var tree = new Tree(
+	{	model: model
+    ,	dndController: dndSource
+	,	showRoot: false
+	,	getIconClass: function(){return "";}
+	,	_createTreeNode: function(args)
+			{
+				var ret = new dijit._TreeNode(args)
+				,	o	= args.item
+				,	name= o.page_title.split('/').pop();
+				ret.labelNode.innerHTML = '<a href="'+getLinkPage(o)+'">'+name+'</a>';
+				$("a",ret.labelNode).on('click',function(){location.href=this.href;});				
+				return ret;
+			}
+    }, $(cssSelector)[0]);
+	tree.attr('path', curPath);
+	tree.startup();
 }
+
+	function 
+getRoot( id )
+{	
+	return function(onItem, onError)
+	{
+		this.get(id).then(onItem, onError);
+	}
+}
+	function
+getPageId( n )
+{	for( var ret=[], i=0; i<=n &&i<pages.length; i++ )
+		ret.push( pages[i] );
+	return ret.join('/');
+}
+	function 
+pathToCurrent()
+{	for( var ret=[], i=1; i<pages.length; i++ )
+		ret.push( getPageId(i) );
+	return ret;
+}
+
 	function
 populateNS( xml )
 {
@@ -89,27 +110,40 @@ populateNS( xml )
 		}
 		d.push(e);
 	});
-	
-	var myStore = new Memory(
-	{   data: d
-	,   getChildren: function(object)
-		{	
-			return this.query({parent: object.id});	
-		}
-    });
 
     var myModel = new ObjectStoreModel(
-	{   store: myStore
+	{   store: createMemoryStore(d)
     ,   query: {id: 'Root'}
 	,	mayHaveChildren: function(o)
 		{
 			return o.id == o.name && o.id!=DEFNS;
 		}
     });
-	createTree( "#p-Namespaces div ul", myModel, curPath  );
+	createTree( "#p-Namespaces div ul", myModel, curPath, getLinkNS  );
 }
 	function
-createTree( cssSelector, myModel, curPath )
+createMemoryStore(d)
+{	return new Memory(
+	{   data: d
+	,   getChildren: function(object)
+		{	
+			return this.query({parent: object.id});	
+		}
+    });
+}
+	function
+getLinkNS( o )
+{
+	return ( mw.config.get( 'wgScript' )+"/"+o.name+':'+ pageTitle ).replace('Default:','');
+}
+	function
+getLinkPage( o )
+{
+	return ( mw.config.get( 'wgScript' )+"/"+curNS+':'+ o.page_title ).replace('Default:','');
+}
+
+	function
+createTree( cssSelector, myModel, curPath, getLink )
 {
     var tree	= new Tree
 	({  model	: myModel
@@ -122,7 +156,7 @@ createTree( cssSelector, myModel, curPath )
 				,	ns  = o.id
 				,	name= o.name;
 				if( o.id != o.name )
-				{	ret.labelNode.innerHTML = '<a href="'+location.pathname.replace( curNS+':', name+':').replace('Default:','')+'">'+name+'</a>';
+				{	ret.labelNode.innerHTML = '<a href="'+getLink(o)+'">'+name+'</a>';
 					$("a",ret.labelNode).on('click',function(){location.href=this.href;});
 				}
 				var cb = new CheckBox(
