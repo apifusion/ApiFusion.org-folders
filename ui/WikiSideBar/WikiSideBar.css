@@ -12,3 +12,7 @@
 
 #p-Organisations:hover	.dijitTreeExpando ,
 #p-Projects:hover		.dijitTreeExpando { visibility:visible; }
+
+.expanded:hover .dijitTree{ overflow: visible; }
+
+.Page_Select_Control input[name=title]{width:100%;}

@@ -2,10 +2,12 @@ define([ "dojo/query"	, "dojo/request",	"dojo/_base/array"	,"dojo/store/Memory"	
 , function( $			, request		,	array				, Memory				, JsonRest				,ObjectStoreModel				, Tree			, CheckBox				, dndSource				, ready )
 {
 
+//	if( typeof mw == 'undefined' )
+//		var mw;
 	var DEFNS = 'Default'
-	,	curNS	= mw.config.get( 'wgCanonicalNamespace' ) || DEFNS
-	,	afRoot	= mw.config.get( 'wgScriptPath' )+"/../"
-	,	pageTitle	= mw.config.get( 'wgTitle' )
+	,	curNS	= (mw && mw.config.get( 'wgCanonicalNamespace' )) || DEFNS
+	,	afRoot	= (mw && mw.config.get( 'wgScriptPath' ) || '.')+"/../"
+	,	pageTitle	= (mw && mw.config.get( 'wgTitle' ) ) || ''
 	,	pages		= pageTitle.split('/');
 
 	ready( function()
@@ -19,8 +21,10 @@ define([ "dojo/query"	, "dojo/request",	"dojo/_base/array"	,"dojo/store/Memory"	
 
 		createPagesTree("#p-Organisations div ul"	,getRoot( "Main_Page"	),[ "Main_Page"		, getPageId(0) ] );
 		createPagesTree("#p-Projects div ul"		,getRoot( getPageId(0)	),[ getPageId(0)	, getPageId(1) ] );
-		createPagesTree("#p-Pages div ul"			,getRoot( getPageId(1)	), pathToCurrent() );
+		createPagesTree("#p-Pages div ul"			,getRoot( getPageId(1)	), pathToCurrent(1, pages) );
 		request( afRoot+"ns/Namespaces.xml", {handleAs:"xml"} ).then( populateNS );
+
+		$(".Page_Select_Control").forEach( init_Page_Select_Control );
     });
 	return {};
 
@@ -50,18 +54,26 @@ createPagesTree(cssSelector, getRoot, curPath)
     ,	dndController: dndSource
 	,	showRoot: false
 	,	getIconClass: function(){return "";}
+	,	openOnClick : false
+	,	_onClick: function(nodeWidget, e)
+			{
+				if( e.target.nodeName.toLowerCase() == "a" )
+					return false;
+				return this.__click(nodeWidget, e, this.openOnClick, 'onClick');
+			}
 	,	_createTreeNode: function(args)
 			{
 				var ret = new dijit._TreeNode(args)
 				,	o	= args.item
+				,	zs	= this
 				,	name= o.page_title.split('/').pop();
 				ret.labelNode.innerHTML = '<a href="'+getLinkPage(o)+'">'+name+'</a>';
-				$("a",ret.labelNode).on('click',function(){location.href=this.href;});				
 				return ret;
 			}
     }, $(cssSelector)[0]);
 	tree.attr('path', curPath);
 	tree.startup();
+	return tree;
 }
 
 	function 
@@ -79,8 +91,8 @@ getPageId( n )
 	return ret.join('/');
 }
 	function 
-pathToCurrent()
-{	for( var ret=[], i=1; i<pages.length; i++ )
+pathToCurrent(i, pages)
+{	for( var ret=[]; i<pages.length; i++ )
 		ret.push( getPageId(i) );
 	return ret;
 }
@@ -139,7 +151,7 @@ getLinkNS( o )
 	function
 getLinkPage( o )
 {
-	return ( mw.config.get( 'wgScript' )+"/"+curNS+':'+ o.page_title ).replace('Default:','');
+	return ( mw.config.get( 'wgScript' )+"/"+curNS+':'+ (o.page_title || o) ).replace('Default:','');
 }
 
 	function
@@ -173,5 +185,61 @@ createTree( cssSelector, myModel, curPath, getLink )
 
 	tree.attr('path', curPath);
     tree.startup();
+}
+	function
+init_Page_Select_Control( el )
+{
+	console.log(el.innerHTML);
+	el.innerHTML=el.innerHTML.replace( /&lt;/g ,"<").replace( /&gt;/g ,">").replace( /<p>/g ,"").replace( /<\/p>/g ,"");
+	var paths = pathToCurrent(0, pages);
+	paths.unshift("Main_Page");
+	var tree = createPagesTree( $(".PagesTree",el ), getRoot( "Main_Page" ), paths );
+	var tm
+	,	inp = $("input[name=title]",el);
+	inp.on("change",OnInputChange);
+	inp.on("input", function()
+		{	tm && clearTimeout(tm);
+			tm = setTimeout( OnInputChange, 1000 );
+		});
+	tree._onClick = function(nodeWidget, e)
+		{
+			if( e.target.nodeName.toLowerCase() == "a" )
+			{
+				inp[0].value = nodeWidget.item.page_title + "/New";
+				OnInputChange();
+				e.preventDefault();
+				return true;
+			}	return this.__click(nodeWidget, e, this.openOnClick, 'onClick');
+		};
+	$("input[name='CreatePage']", el).on( 'click', function()
+		{
+			var v = inp[0].value
+			,	u = getLinkPage( v );
+			if( "New" == v.split('/').pop() )
+				return false;
+			location.href = u +(u.indexOf('?')>0 ? '&':'?')+"action=edit";
+		});
+	OnInputChange();
+
+		function
+	OnInputChange()
+	{	tm && clearTimeout(tm); tm = 0;
+		var msg = $(".warning",el)[0]
+		,	v = inp[0].value
+		,	a = v.split('/')
+		,	paths = pathToCurrent( 0, a ); 
+		paths.unshift("Main_Page")
+		tree.attr('path', paths);
+
+		if( v.split('/').pop() == "New" )
+			return msg.innerHTML = "Replace a 'New' with desired to create page name";
+		tree.model.get( v ).then( function ok(o)
+			{	if( o ) 
+					msg.innerHTML =  "Page found: <a href='"+getLinkPage( o ) + "'>" + o.page_title + "</a>"; 
+				else 
+					err();	
+			}, err); 
+		function err(){ msg.innerHTML = "Will create a page"; }
+	}
 }
 });
