@@ -1,4 +1,4 @@
-define([ "dojo/query"	, "dojo/request",	"dojo/_base/array"	,"dojo/store/Memory"	,"dojo/store/JsonRest"	,"dijit/tree/ObjectStoreModel"	, "dijit/Tree"	, "dijit/form/CheckBox"	,"dijit/tree/dndSource"	, "dojo/ready" ]
+define([ "dojo/query"	, "dojo/request",	"dojo/_base/array"	,"dojo/store/Memory"	,"dojo/store/JsonRest"	,"dijit/tree/ObjectStoreModel"	, "dijit/Tree"	, "dijit/form/CheckBox"	,"dijit/tree/dndSource"	, "dojo/ready", "dojo/NodeList-manipulate" ]
 , function( $			, request		,	array				, Memory				, JsonRest				,ObjectStoreModel				, Tree			, CheckBox				, dndSource				, ready )
 {
 
@@ -193,8 +193,9 @@ init_Page_Select_Control( el )
 	el.innerHTML=el.innerHTML.replace( /&lt;/g ,"<").replace( /&gt;/g ,">").replace( /<p>/g ,"").replace( /<\/p>/g ,"");
 	var paths = pathToCurrent(0, pages);
 	paths.unshift("Main_Page");
-	var tree = createPagesTree( $(".PagesTree",el ), getRoot( "Main_Page" ), paths );
-	var tm
+	var tree = createPagesTree( $(".PagesTree",el ), getRoot( "Main_Page" ), paths )
+	,	model = tree.model
+	,	tm
 	,	inp = $("input[name=title]",el);
 	inp.on("change",OnInputChange);
 	inp.on("input", function()
@@ -225,21 +226,58 @@ init_Page_Select_Control( el )
 	OnInputChange()
 	{	tm && clearTimeout(tm); tm = 0;
 		var msg = $(".warning",el)[0]
-		,	v = inp[0].value
+		,	t = inp[0]
+		,	v = t.value.replace("Main Page/","").replace("Main_Page/","")
 		,	a = v.split('/')
 		,	paths = pathToCurrent( 0, a ); 
 		paths.unshift("Main_Page")
 		tree.attr('path', paths);
 
+		if( t.value != v )
+			t.value = v;
+
 		if( v.split('/').pop() == "New" )
 			return msg.innerHTML = "Replace a 'New' with desired to create page name";
-		tree.model.get( v ).then( function ok(o)
-			{	if( o ) 
-					msg.innerHTML =  "Page found: <a href='"+getLinkPage( o ) + "'>" + o.page_title + "</a>"; 
-				else 
-					err();	
-			}, err); 
-		function err(){ msg.innerHTML = "Will create a page"; }
+
+		model.get( v ).then( function ok(o)
+			{	o	?	msg.innerHTML =  "Page found: <a href='"+getLinkPage( o ) + "'>" + o.page_title + "</a>"
+					:	createPageNote();
+			}, createPageNote); 
+		
+			function 
+		createPageNote()
+		{	msg.innerHTML = "Will create a page";
+			UpdateHint();
+		}
+			function
+		UpdateHint()
+		{
+			var p = v.split('/');
+			if( 2 >  v.length )	return displayHint( "Main_Page/New" );
+			if( 2 == v.length )	return displayHint( "New_Project" );
+			p.pop(); p.push("New");
+			return displayHint( p.join('/') );
+		}
+			function
+		displayHint( page )
+		{
+			var id = "HintSection-"+page;
+			if( document.getElementById(id) )
+				return;
+			request( afRoot+"wiki/api.php?format=json&action=parse&prop=text&page="+page, {handleAs:"json"} )
+			.then( function (o){ o.error ? err() : AppendSection(id, o.parse.text['*']);}, err );
+
+				function 
+			err(ex)
+			{	var a = page.split('/'); a.pop();a.pop(); a.push("New");
+				displayHint( a.join('/'));
+			}
+		}
+			function
+		AppendSection( id, text )
+		{
+			$("#bodyContent").append("<div id='"+id+"'><hr/>"+text+"</div>");
+		}
 	}
 }
 });
