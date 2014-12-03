@@ -46,7 +46,7 @@ createPagesTree(cssSelector, getRoot, curPath)
 	,	getRoot: getRoot
 	,	getLabel: function(o)
 		{
-			return o.page_title.split('/').pop();
+			return o && o.page_title.split('/').pop();
 		}
 	});
     var tree = new Tree(
@@ -64,7 +64,7 @@ createPagesTree(cssSelector, getRoot, curPath)
 	,	_createTreeNode: function(args)
 			{
 				var ret = new dijit._TreeNode(args)
-				,	o	= args.item
+				,	o	= args.item || {page_title:"undefined"}
 				,	zs	= this
 				,	name= o.page_title.split('/').pop();
 				ret.labelNode.innerHTML = '<a href="'+getLinkPage(o)+'">'+name+'</a>';
@@ -189,7 +189,6 @@ createTree( cssSelector, myModel, curPath, getLink )
 	function
 init_Page_Select_Control( el )
 {
-	console.log(el.innerHTML);
 	el.innerHTML=el.innerHTML.replace( /&lt;/g ,"<").replace( /&gt;/g ,">").replace( /<p>/g ,"").replace( /<\/p>/g ,"");
 	var paths = pathToCurrent(0, pages);
 	paths.unshift("Main_Page");
@@ -253,8 +252,8 @@ init_Page_Select_Control( el )
 		UpdateHint()
 		{
 			var p = v.split('/');
-			if( 2 >  v.length )	return displayHint( "Main_Page/New" );
-			if( 2 == v.length )	return displayHint( "New_Project" );
+			if( 2 >  p.length )	return displayHint( "New_Organisation" );
+			if( 2 == p.length )	return displayHint( "New_Project" );
 			p.pop(); p.push("New");
 			return displayHint( p.join('/') );
 		}
