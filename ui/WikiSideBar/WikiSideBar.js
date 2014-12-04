@@ -1,5 +1,5 @@
-define([ "dojo/query"	, "dojo/request",	"dojo/_base/array"	,"dojo/store/Memory"	,"dojo/store/JsonRest"	,"dijit/tree/ObjectStoreModel"	, "dijit/Tree"	, "dijit/form/CheckBox"	,"dijit/tree/dndSource"	, "dojo/ready", "dojo/NodeList-manipulate" ]
-, function( $			, request		,	array				, Memory				, JsonRest				,ObjectStoreModel				, Tree			, CheckBox				, dndSource				, ready )
+define([ "dojo/query"	, "dojo/request",	"dojo/promise/all"	,	"dojo/_base/array"	,"dojo/store/Memory"	,"dojo/store/JsonRest"	,"dijit/tree/ObjectStoreModel"	, "dijit/Tree"	, "dijit/form/CheckBox"	,"dijit/tree/dndSource"	, "dojo/ready", "dojo/NodeList-manipulate" ]
+, function( $			, request		,	all					,	array				, Memory				, JsonRest				,ObjectStoreModel				, Tree			, CheckBox				, dndSource				, ready )
 {
 
 //	if( typeof mw == 'undefined' )
@@ -19,10 +19,14 @@ define([ "dojo/query"	, "dojo/request",	"dojo/_base/array"	,"dojo/store/Memory"	
 		document.getElementsByTagName("head")[0].appendChild(css)
   		document.body.className += " claro";
 
+		all([ request( afRoot+"ns/Namespaces.xml"				, { handleAs:"xml"	} )
+			, request( afRoot+"php/PageNS.php?title="+pageTitle	, { handleAs:"json"	} ) 
+			]).then( populateNS );
+		
+
 		createPagesTree("#p-Organisations div ul"	,getRoot( "Main_Page"	),[ "Main_Page"		, getPageId(0) ] );
 		createPagesTree("#p-Projects div ul"		,getRoot( getPageId(0)	),[ getPageId(0)	, getPageId(1) ] );
 		createPagesTree("#p-Pages div ul"			,getRoot( getPageId(1)	), pathToCurrent(1, pages) );
-		request( afRoot+"ns/Namespaces.xml", {handleAs:"xml"} ).then( populateNS );
 
 		$(".Page_Select_Control").forEach( init_Page_Select_Control );
     });
@@ -98,9 +102,11 @@ pathToCurrent(i, pages)
 }
 
 	function
-populateNS( xml )
+populateNS( arr )
 {
-	var d = [{ id:"Root",name:'Root' }, {id:0,parent:'Root', name:DEFNS, canonical:''}]
+	var xml		= arr[0]
+	,	nsArr	= arr[1]
+	,	d = [{ id:"Root",name:'Root' }, {id:0,parent:'Root', name:DEFNS, canonical:''}]
 	,	o = {}
 	,	curPath = ['Root'];
 
@@ -131,7 +137,7 @@ populateNS( xml )
 			return o.id == o.name && o.id!=DEFNS;
 		}
     });
-	createTree( "#p-Namespaces div ul", myModel, curPath, getLinkNS  );
+	createTree( "#p-Namespaces div ul", myModel, curPath, getLinkNS, nsArr  );
 }
 	function
 createMemoryStore(d)
@@ -155,7 +161,7 @@ getLinkPage( o )
 }
 
 	function
-createTree( cssSelector, myModel, curPath, getLink )
+createTree( cssSelector, myModel, curPath, getLink, nsArr )
 {
     var tree	= new Tree
 	({  model	: myModel
@@ -168,8 +174,15 @@ createTree( cssSelector, myModel, curPath, getLink )
 				,	ns  = o.id
 				,	name= o.name;
 				if( o.id != o.name )
-				{	ret.labelNode.innerHTML = '<a href="'+getLink(o)+'">'+name+'</a>';
+				{	ret.labelNode.innerHTML = '<a href="'+getLink(o)+'" >'+name+'</a>';
+					if( nsArr.indexOf(1*o.id) >=0 )
+						ret.labelNode.className += " nsFound ";					
 					$("a",ret.labelNode).on('click',function(){location.href=this.href;});
+				}else
+				{	var b;
+					array.forEach( myModel.store.query({parent:name}), function( o ){ if( nsArr.indexOf(1*o.id) >=0 ) b = 1; });
+					if( b ) 
+						ret.labelNode.className += " nsFound ";
 				}
 				var cb = new CheckBox(
 				{	onChange: function(b)
