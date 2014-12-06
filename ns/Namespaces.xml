@@ -22,7 +22,7 @@
 			<ns id="15" case="first-letter" subpages="" canonical="Category talk" xml:space="preserve">Category talk</ns>
 			<ns id="500" case="first-letter" subpages="" canonical="Foo" xml:space="preserve">Foo</ns>
 			<ns id="501" case="first-letter" canonical="Foo talk" xml:space="preserve">Foo talk</ns>
-			<ns id="83000" case="first-letter" subpages="" xml:space="preserve" canonical="Requirements"				category="Documentation">Requirements</ns>
+			<ns id="83000" case="first-letter" subpages="" xml:space="preserve" canonical="Requirements"				category="Documents"		>Requirements</ns>
 			<ns id="83001" case="first-letter" subpages="" xml:space="preserve" canonical="Requirements talk"			category="talk"			>Requirements talk</ns>
 			<ns id="83100" case="first-letter" subpages="" xml:space="preserve" canonical="WishList"					category="Documents"	>WishList</ns>
 			<ns id="83101" case="first-letter" subpages="" xml:space="preserve" canonical="WishList talk"				category="talk"			>WishList talk</ns>
