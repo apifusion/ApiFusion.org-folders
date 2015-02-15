@@ -14,6 +14,17 @@ $wgNamespaceProtection[NS_FOO] = array( 'editfoo' ); //permission "editfoo" requ
 $wgNamespacesWithSubpages[NS_FOO] = true;            //subpages enabled for the foo namespace
 $wgGroupPermissions['sysop']['editfoo'] = true;      //permission "editfoo" granted to users in the "sysop" group
 
+# disable editing of all pages, then re-enable for users with confirmed e-mail addresses only
+# Disable for everyone.
+$wgGroupPermissions['*']['edit']              = false;
+# Disable for users, too: by default 'user' is allowed to edit, even if '*' is not.
+$wgGroupPermissions['user']['edit']           = false;
+# Make it so users with confirmed e-mail addresses are in the group.
+$wgAutopromote['emailconfirmed'] = APCOND_EMAILCONFIRMED;
+# Hide group from user list. 
+$wgImplicitGroups[] = 'emailconfirmed';
+# Finally, set it to true for the desired group.
+# $wgGroupPermissions['emailconfirmed']['edit'] = true;
 
 NS_ApiFusionInitFromXml();
 /* comment line above and uncomment bellow to generate namespaces out of this list
