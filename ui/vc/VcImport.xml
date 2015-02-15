@@ -1,0 +1,59 @@
+﻿<?xml version="1.0"  encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="VcImport.xsl"?>
+<!DOCTYPE
+  af:vcimport [
+	<!ENTITY copy "&#169;" >
+	<!ENTITY euro "&#8364;" >
+	<!ENTITY lt "&#38;#60;" >
+	<!ENTITY gt "&#38;#62;" >
+]>
+<af:vcimport xmlns="http://apifusion.com/ui/vc/1.0" xmlns:af="http://apifusion.com/ui/vc/1.0"  >
+	<routines>
+		<RepoTraverse name="Repository hierarchy">
+			<routine mid="ui/vc/VcSessionGitHub"		name="GitHub"		/>
+			<routine mid="ui/vc/BitBucket"				name="BitBucket"	/>
+			<routine mid="ui/vc/VcSessionSourceFourge"	name="SourceFourge"	/>
+			<routine mid="ui/vc/VcSessionSvn"			name="Subversion"	/>
+			<routine mid="ui/vc/VcSessionGit"			name="Git"			/>
+			<routine mid="ui/vc/VcSessionHg"			name="Mercurial"	/>
+		</RepoTraverse>
+		<group	name="Api Extraction">
+			<group name="Java Script">
+				<routine mid="ui/vc/VcApiDojoDeclare"		name="Dojo Toolkit 1.x declare"	/>
+			</group>
+			<group name="Rendered from sources Help"	href="http://en.wikipedia.org/wiki/Comparison_of_documentation_generators">
+				<group	name="Python">
+					<routine mid="ui/vc/VcApiSphynx"		name="Sphynx"		href="http://sphinx-doc.org" />
+				</group>
+				<group	name="JavaScript">
+					<routine mid="ui/vc/VcApi_JsDoc"		name="JsDoc"		href="http://en.wikipedia.org/wiki/JSDoc" />
+					<routine mid="ui/vc/VcApi_JsXmlDoc"		name="JsXmlDoc"		href="https://msdn.microsoft.com/en-us/library/bb514138.aspx" />
+					<routine mid="ui/vc/VcApi_JsAnnotation"	name="JsAnnotation"	href="http://simulationlabs.com/dojo/DojoPlay2012/lib/Annotation/main.js" />
+				</group>				
+			</group>
+			<group name="ApiFusion">
+				<routine mid="ui/vc/VcApi_AfImportSimulator" name="Import Routine Simulator"	selected="1" />
+			</group>
+		</group>
+		<group	name="By file type" selected="1">
+			<group name="JavaScript">
+				<group name="AMD">
+					<routine mid="ui/vc/VcApiDojoDeclare"		name="Dojo Toolkit 1.x declare"	selected="0" />
+				</group>
+			</group>
+			<group	name="Python">
+				<routine mid="ui/vc/VcApiSphynx"		name="Sphynx"	href="http://sphinx-doc.org" selected="1"/>
+			</group>
+		</group>
+	</routines>
+	<repository href="https://github.com/apifusion/ApiFusion.org-folders.git" 
+				type="GitHub" 
+				path="/"
+				rendermode="edit"
+				>
+		<folder name="vc" path="ui/vc">
+			<routine mid="ui/vc/VcApiSphynx" complete="100%"/>
+			<file name="VcImport.js" path="ui/vc/VcImport.js"/>
+		</folder>		
+	</repository>
+</af:vcimport>

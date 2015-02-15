@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=570"/>
+
+	<title>Import from Version Control</title>
+	<!--
+		Transforms XML with XSLT, incorporate JS and CSS to serve rendered content.
+	-->
+	<style type="text/css">
+		@import "/dojo/dojo/resources/dojo.css";
+		@import "/dojo/dgrid/css/skins/claro.css";
+			
+		input[type='text']{ width:99%; }
+		.VcImport_params table {width:100%;}
+		.VcImport_params th {width:10em;text-align:right;padding:0.1em;vertical-align: top;}
+				
+		ul.collapsible{-webkit-margin-before: 0;}
+		.collapsible li{list-style:none;list-style-position: inside;}
+		.collapsible>input[type='checkbox']+label>u,
+		.collapsible>input[type='checkbox']+label>s
+			{text-decoration: inherit; text-shadow: -1px -1px 1px #fff, -1px 0px 1px #fff, 0px -1px 1px #fff, 1px 1px 1px #999, 0px 1px 1px #999, 1px 0px 1px #999, 1px 1px 5px #113;}
+				
+		.collapsible>input[type='checkbox'],
+		.collapsible>input[type='checkbox']+label>s,
+		.collapsible>input[type='checkbox']:checked+label>u,
+		.collapsible>input[type='checkbox']:checked+label+ul
+			{display:none;}
+		.collapsible>input[type='checkbox']:checked+label>s,
+		.collapsible>input[type='checkbox']+label>u
+			{display:inline-block;line-height: 1em;}
+
+
+	</style>
+	<script src="/dojo/dojo/dojo.js" type="text/javascript"
+		data-dojo-config="async: true,packages: [{name:'ui',location:'/af/ui'}]"></script>
+	<script type="text/javascript">
+require(["dojo/query", "dojo/parser", "ui/AMD/xml", "ui/AMD/xml!./VcImport.xml", "ui/AMD/xml!./VcImport.xsl", "dojo/domReady!"],
+function( $, parser, Xml, importXml, xsl )
+{
+	render();
+	$("form").on("submit",startImport);
+	$(document.body).on("change", input2xml);
+	return;
+
+		function 
+	render(){	Xml.transform( importXml, xsl, document.querySelector('.VcImport') || document.body || document.documentElement ); 	}
+
+	function startImport(ev)
+	{	ev.stopPropagation();
+		var el = Xml.XPath_node("//af:repository",importXml)
+		el.setAttribute("rendermode", "view");
+		el.setAttribute("af:importstartdate", new Date().toUTCString());
+		el.removeAttribute("af:importenddate");
+		render();
+		return false;
+	}
+		function 
+	PauseImport()
+	{
+		alert(2);
+	}
+		function
+	input2xml(ev)
+	{
+		var el	= ev.target
+		,	x	= Xml.XPath_node( el.getAttribute("af:xpath"), importXml );
+		if( "checkbox" == el.type )
+			x.setAttribute("selected",el.checked ? 1:0 );
+		else
+			x.setAttribute( el.name, el.value );
+	}
+});
+	</script>
+</head>
+<body class="claro">
+	<div class="VcImport">
+	</div>
+</body>
+</html>
