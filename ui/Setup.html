@@ -8,7 +8,7 @@
 <h1>Wiki integration</h1>
 <ol>
 	<li>
-		Edit <a href="http://localhost:8480/af/wiki/index.php?title=MediaWiki:Common.js&action=edit">MediaWiki:Common.js</a> (replace localhost with deployment host name and wiki URL)
+		Edit <a href="../wiki/index.php?title=MediaWiki:Common.js&action=edit">MediaWiki:Common.js</a> (replace localhost with deployment host name and wiki URL)
 	</li>
 	<li>
 <pre>/* Any JavaScript here will be loaded for all users on every page load. */
@@ -18,14 +18,16 @@ mw.loader.load("/af/ui/WikiSideBar/WikiSideBar.css","text/css",true);
 </pre>	
 	</li>
 	<li>
-		Edit <a href="http://localhost:8480/af/wiki/index.php?title=MediaWiki:Common.css&action=edit">MediaWiki:Common.css</a> (replace localhost with deployment host name and wiki URL)
+		Edit <a href="../wiki/index.php?title=MediaWiki:Common.css&action=edit">MediaWiki:Common.css</a> (replace localhost with deployment host name and wiki URL)
 	</li>
 	<li>
 <pre>/* CSS placed here will be applied to all skins */
 @import url("/af/ui/WikiSideBar/WikiSideBar.css");
 </pre>	
 	</li>
-	<li>Edit <a href="http://localhost:8480/af/wiki/index.php/MediaWiki:Sidebar">MediaWiki:Sidebar</a></li>
+	<li>Edit <a href="../wiki/index.php/MediaWiki:Sidebar">MediaWiki:Sidebar</a></li>
+	<li>Copy output of <a href="../ns/NSSiblings.xml">../ns/NSSiblings.xml</a> to <a href="../wiki/index.php/Template:NSSiblings">../wiki/index.php/Template:NSSiblings</a> . 
+		The siblings list is available via {{NSSiblings}}.</li>
 	<li>
 <pre>
 * navigation
