@@ -1,0 +1,35 @@
+<?xml version="1.0"  encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="NSSiblings.xml"?>
+<!DOCTYPE
+  xsl:stylesheet [
+	<!ENTITY copy "&#169;" >
+	<!ENTITY euro "&#8364;" >
+	<!ENTITY lt "&#38;#60;" >
+	<!ENTITY gt "&#38;#62;" >
+]>
+<xsl:stylesheet version="1.0"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+>
+	<xsl:output  method="text"
+		encoding="UTF-8"
+		xml:lang="en"
+		indent="yes" 
+		/>
+
+	<xsl:template match="ns">[[<xsl:value-of select="@canonical"/>:{{PAGENAME}}|<xsl:value-of select="@canonical"/>]]
+	</xsl:template>
+
+	<xsl:template match="ns[@id='0']">[[{{PAGENAME}}|Default]] 
+	</xsl:template>
+	
+	<xsl:template match="ns[@category='talk']" ></xsl:template>
+	<xsl:template match="ns[@canonical='Category']" ></xsl:template>
+	<xsl:template match="ns[@canonical='File']" ></xsl:template>
+
+	<xsl:template match="/">
+		&lt;span class="NSSiblings"&gt;
+			<xsl:apply-templates  select="document('Namespaces.xml')//ns"/>
+		&lt;/span&gt;
+	</xsl:template>
+</xsl:stylesheet>
