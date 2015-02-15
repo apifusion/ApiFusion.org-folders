@@ -40,10 +40,16 @@ $dbr = wfGetDB( DB_MASTER );
 		$res2 = $dbr->query($sql);
 		$children = array();
 		foreach( $res2 as $row2 ) 
-//			if( $row2->childrenCount != '0' )
+			if( 0 !== strpos($row2->page_title, 'New')  && ( $title != 'Main_Page' ||  is_valid_domain_name($row2->page_title,'.') ) )
 				array_push($children, '{ "nsCount":'. $row2->nsCount.',"page_title":"'. $row2->page_title.'", "parent":"'.$title.'","childrenCount":"'.$row2->childrenCount.'" } ');	
 		echo implode(',',$children);
 		echo '] } ';	
 	}
+function is_valid_domain_name($domain_name)
+{
+    return (preg_match("/^([a-z\d](-*[a-z\d])*)(\.([a-z\d](-*[a-z\d])*))*$/i", $domain_name) //valid chars check
+            && preg_match("/^.{1,253}$/", $domain_name) //overall length check
+            && preg_match("/^[^\.]{1,63}(\.[^\.]{1,63})*$/", $domain_name)   ); //length of each label
+}
 
 ?>
