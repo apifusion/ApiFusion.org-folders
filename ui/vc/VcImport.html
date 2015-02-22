@@ -12,8 +12,10 @@
 		@import "/dojo/dojo/resources/dojo.css";
 		@import "/dojo/dgrid/css/skins/claro.css";
 			
+		table {border-collapse: collapse;}
+		td{ padding:0 0.3em 0  0.3em;}
 		input[type='text']{ width:99%; }
-		.VcImport_params table {width:100%;}
+		.VcImport_params table {width:100%;border-collapse: collapse;}
 		.VcImport_params th {width:10em;text-align:right;padding:0.1em;vertical-align: top;}
 				
 		ul.collapsible{-webkit-margin-before: 0;}
@@ -65,17 +67,26 @@ function( $, parser, Xml, importXml, xsl )
 	input2xml(ev)
 	{
 		var el	= ev.target
-		,	x	= Xml.XPath_node( el.getAttribute("af:xpath"), importXml );
+		,	xp	= el.getAttribute("af:xpath")
+		,	x	= Xml.XPath_node( xp, importXml )
+		,	n	= el.name
+		,	v	= el.value;
+		
 		if( "checkbox" == el.type )
-			x.setAttribute("selected",el.checked ? 1:0 );
-		else
-			x.setAttribute( el.name, el.value );
+		{	n = "selected";
+			v = el.checked ? 1:0;
+		}
+		
+		x.setAttribute( n, v );
+		console.log( n,v,xp);
+
+		if( el.parentNode.className.indexOf("refreshonchange") >=0 )
+			setTimeout(render,100);
 	}
 });
 	</script>
 </head>
 <body class="claro">
-	<div class="VcImport">
-	</div>
+	<div class="VcImport"></div>
 </body>
 </html>

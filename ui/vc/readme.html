@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>ApiFusion VC import</title>
+	<style type="text/css">
+	</style>
+</head>
+<body>
+<h1>ApiFusion VC import</h1>
+<p>Import different data from Version Control starts from repository discovery enlisting the files and folders hierarchy.</p>
+
+<p>Import stages:</p>
+<ol>
+	<li>Import Parameters</li>
+	<li>Read last import data</li>
+	<li>Retrival repository hierarchy</li>
+	<li>Traverce over VC repository structure and Run each selected import routine.</li>
+</ol>
+<fieldset>
+	<legend>Modules</legend>
+	<ul>
+		<li><var><a href="VcImport.html">VcImport.html</a></var>
+			is a primary entry point for import process. 
+			It is called from ApiFusion page with current location(a mediawiki title) in url parameters.
+			<br />
+			Embedded CSS and JavaScript are serving UI presentation and event handling.
+		</li>
+		<li><var><a href="VcImport.xml">VcImport.xml</a></var> is an initial content for imported data. 
+			<br />It is loaded by xml AMD plugin <var>"ui/AMD/xml!./VcImport.xml"</var>. 
+			This xml! plugin is used as AMD module and serving XSLT and XPath heplers.
+			&quot;Import data&quot; section bellow details the content.</li>
+		<li><var><a href="VcImport.xsl">VcImport.xsl</a></var> fills UI for import parameters and import progress/results. 
+			<br />The import parameters are rendered only once. The tree view uses CSS for checkbox to arrow substitution.
+			This xml! plugin is used as AMD module and serving XSLT and XPath heplers.
+			<br />
+			The xml+xsl output rendered into body on each xml change
+		</li>
+	</ul>
+</fieldset>
+<fieldset>
+	<legend>Import data</legend>
+	The import data presented as XML which
+	:
+	<ul>
+		<li>initially loaded from <a href="VcImport.xml">VcImport.xml</a></li>
+		<li>eventually updated from ApiFusion for imports parameters defined in 1st import stage</li>
+		<li>populated VC repository hierarchy</li>
+		<li>on each hierarchy element the <var>routine</var>s added</li>
+		<li><var>routine</var> filled with data, checksum created</li>
+	</ul>
+	Data sections:
+	<ul>
+		<li><var>routines/RepoTraverse/routine</var> defines the module for repository traverse. 
+			
+		</li>
+		<li><var>routines/group//routine</var> defines the module for import. 
+			It is presented in UI by <var>@name</var>. <br />
+			During import for each <var>routine[@selected='1']</var>, 
+			the routine object is instantiated by AMD JS loader by <var>@mid</var>. 
+			The instance would be created on each file/folder on repository hierarchy. <br />
+			AF would clone <strong>&lt;routine</strong>  into <var>folder|directory</var> level.<br /> 
+			Routine would import content for review and comparison with previous import.
+
+		</li>
+		<li><var>routines/RepoTraverse/routine</var> present the import by repository type. 
+			<br />Page will load JS by its <var>@mid</var>. 
+			Than loaded module opens connection to repository with given credentials and traverce the repo hierarchy filling 
+			<var>af:vcimport/repository</var>
+		</li>
+		<li>The folder/files structure from VC repository kept within <var>af:vcimport/repository</var> 
+			as 
+		</li>
+		<li><var>folder</var> and <var>file</var> entries are subject for processing by selected <var>routine</var>s.
+			<br />Each <var>routine</var> preserved as a child when run on entry. 
+		</li>
+		<li>Common for all <var>routine</var>s attributes:
+			<ul>
+				<li><var>@start</var>	timestamp of processing. Initially 0 until <var>routine</var> started.</li>
+				<li><var>@end</var>		-||- ended</li>
+			</ul>
+			The imported data are preserved within <var>routine</var> element for comparison against following imports 
+			and further integration on ApiFusion pages.
+		</li>
+		<li><var>folder/routine@checksum</var>. Upon import completion this attribute could replace the imported by 
+			<var>routine</var> content assuming it is not dynamic(no timestamps, session info, etc). 
+			Dynamic content should be comparable by <var>routine</var> implementation.
+		</li>
+	</ul>
+</fieldset>
+<fieldset>
+	<legend>Import process UI</legend>
+	The VC repository hierarchy is shown as a collapsible tree to observe the each level individually. 
+	<br />The stats on each <var>routine</var> precented as column with completion % computed as ratio 
+		of processed counter( with non-zero <var>@end</var> ) to total child couner.
+	<br /><var>routine</var> could have specific stats like number of module methods/members or help entries.
+	Those will make own sub-section within routine column and compute the completion 
+	% against previous import results. If no previous import for
+	<var>
+	routine</var> found, those sections omitted.</fieldset>
+
+</body>
+</html>

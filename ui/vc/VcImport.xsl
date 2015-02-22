@@ -69,27 +69,37 @@
 			</form>
 		</div>		
 	</xsl:template>
-	
+	<xsl:template mode="CollapsibleControl" match="*">
+		<!-- CSS notes assumes container has class="collapsible" and next UL sibling visibility triggered by checkbox -->
+		<xsl:variable name="collapseId" select="generate-id()"/>
+		<xsl:if test="*"><!-- only if children are present -->
+			<input type="checkbox" id="{$collapseId}" name="collapsed" value="1" >
+				<xsl:attribute name="af:xpath">
+					<xsl:apply-templates mode="xpath" select="."/>
+				</xsl:attribute>
+				<xsl:attribute name="title">
+					<xsl:apply-templates mode="xpath" select="."/>
+				</xsl:attribute>
+				<xsl:if test="@selected='1'"><xsl:attribute name="checked">checked</xsl:attribute></xsl:if>
+			</input>
+		</xsl:if>
+		<label for="{$collapseId}">
+			<xsl:if test="*"><u>&triangledown;</u><s>&triangleright;</s></xsl:if>
+			<span><xsl:value-of select="@name"/></span> 
+		</label>		
+	</xsl:template>
 	<xsl:template mode="RoutiesGroup" match="af:group">
 		<xsl:variable name="collapseId" select="generate-id()"/>
 		<li>
 			<div class="collapsible">
-				<input type="checkbox" id="{$collapseId}" name="collapsed" value="1" >
-					<xsl:attribute name="af:xpath">
-						<xsl:apply-templates mode="xpath" select="."/>
-					</xsl:attribute>
-					<xsl:attribute name="title">
-						<xsl:apply-templates mode="xpath" select="."/>
-					</xsl:attribute>
-					<xsl:if test="@selected"><xsl:attribute name="checked">checked</xsl:attribute></xsl:if>
-				</input>
-				<label for="{$collapseId}"><u>&triangledown;</u><s>&triangleright;</s><span><xsl:value-of select="@name"/></span> </label>
+				<xsl:apply-templates mode="CollapsibleControl" select="." />
 				<ul>
 					<xsl:apply-templates mode="RoutiesGroup" select="*" />
 				</ul>
 			</div>
 		</li>
 	</xsl:template>
+		
 	<xsl:template mode="RoutiesGroup" match="af:routine">
 		<li title="{@mid}">
 			<label>
@@ -103,19 +113,26 @@
 			</label>
 		</li>
 	</xsl:template>
-	<xsl:template mode="stats_body_th" match="*[not(@selected='1')]"></xsl:template>
-	<xsl:template mode="stats_body_th"	match="*[@selected='1']"			><th><xsl:value-of select="@name"/></th></xsl:template>
+	<xsl:template mode="stats_headers"	match="*[not(@selected='1')]"></xsl:template>
+	<xsl:template mode="stats_headers"	match="*[@selected='1']"			><th><xsl:value-of select="@name"/></th></xsl:template>
 	<xsl:template mode="stats_body_cell"	match="*[not(@selected='1')]"	></xsl:template>
-	<xsl:template mode="stats_body_cell"	match="*[@selected='1']"		><td><xsl:value-of select="@name"/></td></xsl:template>
+	<xsl:template mode="stats_body_cell"	match="*[@selected='1']"		><td><xsl:value-of select="count(.//*[not(@end='0')])"/></td></xsl:template>
 	<xsl:template mode="stats_body_row"		match="*">
 		<xsl:param name="depth" >0</xsl:param>
 		<tr>
-			<td style="padding-left:{$depth}em" class="{name(.)}"><xsl:value-of select="@name"/></td>
-			<xsl:apply-templates mode="stats_body_cell" select="//af:routine" />
+			<td style="padding-left:{$depth}em" class="collapsible refreshonchange {name(.)}">
+				<xsl:apply-templates mode="CollapsibleControl" select="." />
+			</td>
+			<td><xsl:value-of select="count(.//*)"/></td>
+			<xsl:apply-templates mode="stats_body_cell" select="//af:routine" >
+				<xsl:sort select="name()"/>
+			</xsl:apply-templates>
 		</tr>
-		<xsl:apply-templates mode="stats_body_row" select="*" >
-			<xsl:with-param name="depth"><xsl:value-of select="$depth+1"/></xsl:with-param>
-		</xsl:apply-templates>
+		<xsl:if test="not(@selected='1')">
+			<xsl:apply-templates mode="stats_body_row" select="*" >
+				<xsl:with-param name="depth"><xsl:value-of select="$depth+1"/></xsl:with-param>
+			</xsl:apply-templates>
+		</xsl:if>
 	</xsl:template>
 	
 	<xsl:template match="af:repository[@rendermode='view']">
@@ -132,8 +149,11 @@
 				<table border="1">
 					<thead>
 						<tr>
-							<th>path</th>
-							<xsl:apply-templates mode="stats_body_th" select="//af:routine" />
+							<th>Source tree</th>
+							<th title="count of components(files, directories)">#</th>
+							<xsl:apply-templates mode="stats_headers" select="//af:routine" >
+								<xsl:sort select="name()"/>
+							</xsl:apply-templates>
 						</tr>
 					</thead>	
 					<tbody>
