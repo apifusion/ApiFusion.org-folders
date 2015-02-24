@@ -51,10 +51,10 @@ function( $, parser, Xml, importXml, xsl )
 
 	function startImport(ev)
 	{	ev.stopPropagation();
-		var el = Xml.XPath_node("//af:repository",importXml)
-		el.setAttribute("rendermode", "view");
-		el.setAttribute("af:importstartdate", new Date().toUTCString());
-		el.removeAttribute("af:importenddate");
+		Xml	.$( "//af:repository", importXml )
+			.attr( "rendermode", "view")
+			.attr( "af:importstartdate", new Date().toUTCString() )
+			.removeAttribute( "af:importenddate" );
 		render();
 		return false;
 	}
