@@ -34,23 +34,14 @@
 			,	cleanElement : cleanElement
 			};
 		function 
-	XPath_nl( xPath, node )
+	XPath_nl( /* string | Array */ xPath, node )
 	{
-		var d = node.ownerDocument || node
-		,	nsResolver = d.createNSResolver && d.createNSResolver(d.documentElement)
-		,	nl =[]
-		,	xr 
-		,	e;
-		if( d.evaluate )
-			xr = (node.ownerDocument || node).evaluate( xPath, node, nsResolver, 0, null );
+		var	d	= ( node || xPath[0] ).ownerDocument || node
+		,	nl	= [];
+		if( "string" == typeof xPath )
+				nl = xpath2arr(xPath, node);
 		else
-		{
-			d.setProperty('SelectionLanguage', 'XPath');
-			d.setProperty('SelectionNamespaces', 'xmlns:xsl="http://www.w3.org/1999/XSL/Transform"');
-			xr = node.SelectNodes( xPath );//, nsmgr );
-		}
-		while( e = xr.iterateNext() )
-			nl.push(e);
+				nl.push.apply(nl,xPath);
 
 		// WindJetQuery inlined
 		var o = nl[0] || createElement('b',d);
@@ -80,9 +71,51 @@
 		}, nl );
 
 		nl.attr = nl.setAttribute; // alias
+		nl.val	= function(){ return this[0] && this[0].value; }
+		nl.createChild = createChild;
+		nl.$ = function(xp)
+		{	var ret = [];
+			this.forEach( function( el, i )
+			{
+				ret.push.apply( ret, xpath2arr(xp,el) );
+			});
+			return XPath_nl(ret);
+		}
+		nl.$ret = function(){	return XPath_nl(this._ret); }
 
 		return nl;
+
+			function
+		xpath2arr(xPath, node)
+		{
+			var nl =[]
+			,	e, xr
+			,	nsResolver = d.createNSResolver && d.createNSResolver(d.documentElement);
+
+			if( d.evaluate )
+				xr = (node.ownerDocument || node).evaluate( xPath, node, nsResolver, 0, null );
+			else
+			{
+				d.setProperty('SelectionLanguage', 'XPath');
+				d.setProperty('SelectionNamespaces', 'xmlns:xsl="http://www.w3.org/1999/XSL/Transform"');
+				xr = node.SelectNodes( xPath );//, nsmgr );
+			}
+			while( e = xr.iterateNext() )
+				nl.push(e);
+			return nl;
+		}
 	}
+		function 
+	createChild(name, attrs)
+	{	this.forEach(function(n,i)
+			{	var c = this._ret[i] = n.ownerDocument.createElement(name);
+				for( var a in attrs )
+					c.setAttribute(a, attrs[a] );
+				n.appendChild( c );
+			}, this);
+		return this; 
+	}
+
 		function 
 	getXml( url, callback )
 	{

@@ -3,8 +3,8 @@
 
 
 */
-define([	"dojo/declare"	,"dojo/request"	,"dojo/promise/all"	,"dojo/_base/array"	,"dojo/store/Memory","dojo/store/JsonRest"]
-, function( declare			,request		,all				,array				,Memory				, JsonRest				)
+define([	"dojo/_base/declare", "dojo/_base/lang"	,"dojo/request"	,"dojo/promise/all"	,"dojo/_base/array"	,"dojo/store/Memory","dojo/store/JsonRest"]
+, function( declare				,lang				,request		,all				,array				,Memory				, JsonRest				)
 {
 	if( typeof mw == 'undefined' )
 		var mw;
@@ -15,17 +15,14 @@ define([	"dojo/declare"	,"dojo/request"	,"dojo/promise/all"	,"dojo/_base/array"	
 	,	pages		= pageTitle.split('/');
 
 
-	return declare( // [Memory]
-	{	Repo /*VcSession*/: 0
-	,	construct: function( /*Object*/ params )
+	return declare( null, // [Memory]
+	{	ImportXml	:0
+	,	RoutineEl	:0
+	,	constructor: function( /*Object*/ kwArgs )
 		{
-		
+			lang.mixin(this, kwArgs);
 		}
-	,	InitAuth /*Promise*/: function( /*string*/ login, /*string*/ password )
-		{
-		}
-	,	SetRepo					/*Promise*/	: function( /*string*/ url ){	require( [this.GetImplementationMid(url)], function( impl ){ this.Repo = new Impl(this); }); } // todo return Promise
-	,	GetImplementationMid	/*MID*/		: function( /*string*/ url ){ return "ui/vc/vcGitHub"; } // todo other VC types
+	,	Init /*Promise*/: function( /*Object*/ kwArgs ){}	// override to use parameters like auth method, key, login, password, ApiKey, etc
 	,	List					/*Promise*/	: function( /*string*/pathInRepo ){ return this.Repo.List(pathInRepo); }
 	,	GetText					/*Promise*/	: function( /*string*/pathInRepo ){ return this.Repo.GetText(pathInRepo); }
 	,	GetTags					/*Promise*/	: function( /*string*/pathInRepo ){ return this.Repo.GetTags(pathInRepo); }

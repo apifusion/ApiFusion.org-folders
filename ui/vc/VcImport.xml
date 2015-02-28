@@ -10,7 +10,7 @@
 <af:vcimport xmlns="http://apifusion.com/ui/vc/1.0" xmlns:af="http://apifusion.com/ui/vc/1.0"  >
 	<routines>
 		<RepoTraverse name="Repository hierarchy">
-			<routine mid="ui/vc/VcSessionGitHub"		name="GitHub"		/>
+			<routine mid="ui/vc/VcSessionGitHub"		name="GitHub"		selected="1"	/>
 			<routine mid="ui/vc/BitBucket"				name="BitBucket"	/>
 			<routine mid="ui/vc/VcSessionSourceFourge"	name="SourceFourge"	/>
 			<routine mid="ui/vc/VcSessionSvn"			name="Subversion"	/>
@@ -48,7 +48,7 @@
 	</routines>
 	<repository href="https://github.com/apifusion/ApiFusion.org-folders.git" 
 				type="GitHub" 
-				path="/"
+				path="/ui"
 				rendermode="edit"
 				>
 		<folder name="ui" path="ui/vc">

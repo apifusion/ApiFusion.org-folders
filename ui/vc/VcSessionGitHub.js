@@ -3,8 +3,8 @@
 
 
 */
-define([	"dojo/declare"	,"dojo/request"	,"dojo/promise/all"	,"dojo/_base/array"	,"dojo/store/Memory","./VcSession"]
-, function( declare			,request		,all				,array				,Memory				, VcSession				)
+define([	"dojo/_base/declare","dojo/request"	,"dojo/Deferred","dojo/_base/array"	,"dojo/store/Memory","./VcSession"]
+, function( declare				,request		,Deferred		,array				,Memory				, VcSession				)
 {
 	if( typeof mw == 'undefined' )
 		var mw;
@@ -15,20 +15,59 @@ define([	"dojo/declare"	,"dojo/request"	,"dojo/promise/all"	,"dojo/_base/array"	
 	,	pages		= pageTitle.split('/');
 
 
-	return declare( [VcSession]
-	{	Repo /*VcSession*/: 0
-	,	construct: function( /*Object*/ params )
+	return declare( [VcSession],
+	{	repoParams	: {}
+	,	ApiUrl		: "https://api.github.com/repos"
+	,	constructor	: function( /*Object*/ params )
 		{
 		}
-	,	InitAuth /*Promise*/: function( /*string*/ login, /*string*/ password )
-		{
+	,	Init /*Promise*/: function( /*Object*/ kwArgs )
+		{	//	parse git repo URL and save as API root 
+			//	https://github.com/apifusion/ApiFusion.org-folders.git
+			
+			var d = new Deferred( function(reason)
+			{
+				// do something when the Deferred is cancelled
+			});
+			
+			this.repoParams = kwArgs;
+			var url = this.repoParams.href;
+			console.log(url);
+			var u	= document.createElement('a');
+			u.href = url.replace('.git','');
+			this.ApiUrl += u.pathname + "/contents/" ;
+			
+			// call auth and in callback 
+			d.resolve(1);
+			return d;
 		}
-	,	SetRepo					/*Promise*/	: function( /*string*/ url ){	require( [this.GetImplementationMid(url)], function( impl ){ this.Repo = new Impl(this); }); } // todo return Promise
-	,	GetImplementationMid	/*MID*/		: function( /*string*/ url ){ return "ui/vc/vcGitHub"; } // todo other VC types
-	,	List					/*Promise*/	: function( /*string*/pathInRepo ){ return this.Repo.List(pathInRepo); }
-	,	GetText					/*Promise*/	: function( /*string*/pathInRepo ){ return this.Repo.GetText(pathInRepo); }
-	,	GetTags					/*Promise*/	: function( /*string*/pathInRepo ){ return this.Repo.GetTags(pathInRepo); }
-	,	GetContributors			/*Promise*/	: function( /*string*/pathInRepo ){ return this.Repo.GetContributors(pathInRepo); }
-	,	GetLastModified			/*Promise*/	: function( /*string*/pathInRepo ){ return this.Repo.GetLastModified(pathInRepo); }
+	,	List /*Promise*/	: function( /*string*/pathInRepo, $x )
+		{	var u = this.ApiUrl + pathInRepo 
+			,	zs= this;
+			
+			console.log(u);
+
+			$x.attr("start"	, af_timestamp() );
+			$x.attr("end"	, 0 );
+			
+			return request( u, {handleAs:'json'} ).then( function(o)
+			{	// for each add the file/folder and recursively call
+				o.forEach && o.forEach( function(o)
+				{	var $r = $x.createChild( o.type, o).$ret();
+$r.attr("selected",1);
+					if( "dir" == o.type )
+						setTimeout(function()
+						{
+							zs.List(o.path, $r);
+						},1000);
+				});
+				$x.attr("end", af_timestamp() );
+			}, function(err)
+			{	var msg = err.response && err.response.text || err;
+				$x.attr("error", msg );
+				console.error( msg );
+				debugger;
+			});
+		}
 	});
 });

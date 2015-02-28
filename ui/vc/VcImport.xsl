@@ -142,7 +142,7 @@
 					<tr><th>Repository	</th><td><xsl:value-of select="@href"/></td></tr>
 					<tr><th>Type		</th><td><xsl:value-of select="@type"/></td></tr>
 					<tr><th>Path		</th><td><xsl:value-of select="@path"/></td></tr>
-					<tr><th><input type="submit" value="Pause"/></th><td></td></tr>
+					<tr><th><input type="submit" value="Pause" onclick="PauseImport()"/></th><td></td></tr>
 				</tbody>	
 			</table>
 			<div class="VcImport_stats">

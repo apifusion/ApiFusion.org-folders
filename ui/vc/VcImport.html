@@ -38,30 +38,65 @@
 	<script src="/dojo/dojo/dojo.js" type="text/javascript"
 		data-dojo-config="async: true,packages: [{name:'ui',location:'/af/ui'}]"></script>
 	<script type="text/javascript">
+	function
+af_timestamp()
+{	var d = new Date(); return d.getUTCFullYear()+pad(d.getUTCMonth())+pad(d.getUTCDate())+pad(d.getUTCHours())+pad(d.getUTCMinutes())+pad(d.getUTCSeconds());	
+		function 
+	pad(n,w){return(1e10+n+"").slice(-(w||2))}
+}
+
 require(["dojo/query", "dojo/parser", "ui/AMD/xml", "ui/AMD/xml!./VcImport.xml", "ui/AMD/xml!./VcImport.xsl", "dojo/domReady!"],
 function( $, parser, Xml, importXml, xsl )
 {
 	render();
 	$("form").on("submit",startImport);
 	$(document.body).on("change", input2xml);
+	window.PauseImport = PauseImport;
 	return;
 
 		function 
+	$x(xpath){ return Xml.$( xpath, importXml ); }
+		function 
 	render(){	Xml.transform( importXml, xsl, document.querySelector('.VcImport') || document.body || document.documentElement ); 	}
-
-	function startImport(ev)
+		function 
+	startImport(ev)
 	{	ev.stopPropagation();
-		Xml	.$( "//af:repository", importXml )
+		var repo = $x( "//af:repository")
 			.attr( "rendermode", "view")
 			.attr( "af:importstartdate", new Date().toUTCString() )
 			.removeAttribute( "af:importenddate" );
+
+
 		render();
+		var initO = {};
+		repo.$( "@*" ).forEach( function(a)
+			{ 
+				initO[a.name] = a.value; 
+			} );
+
+		$x( "//af:RepoTraverse/af:routine[@selected='1']")
+			.forEach( function( routineEl )
+			{	routineEl.setAttribute("start",af_timestamp());
+				require	(	[ routineEl.getAttribute("mid") ]
+						,	function( Routine )
+							{	
+								var r = new Routine( {ImportXml:importXml, RoutineEl:routineEl} );
+								r.Init(initO).then( function()
+								{	var p = repo.$("@path").val() ;
+									if( p.charAt(0) == '/' )
+										p = p.substring(1);
+									r.List( p, repo );
+								});
+							}
+						);
+			});
+		// setInterval(render,1000);
 		return false;
 	}
 		function 
 	PauseImport()
 	{
-		alert(2);
+		render();
 	}
 		function
 	input2xml(ev)
