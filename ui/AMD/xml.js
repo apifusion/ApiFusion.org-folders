@@ -7,7 +7,8 @@
 	// description:
 	//		As plugin returns XMLDOMDocument retrieved by XHR
 
-	var XHTML = "http://www.w3.org/1999/xhtml";
+	var XHTML	= "http://www.w3.org/1999/xhtml"
+	,	AFNS	= "http://apifusion.com/ui/vc/1.0";
 
     return	{	load: function load(name, req, onLoad, config) 
 				{
@@ -108,7 +109,7 @@
 		function 
 	createChild(name, attrs)
 	{	this.forEach(function(n,i)
-			{	var c = this._ret[i] = n.ownerDocument.createElement(name);
+			{	var c = this._ret[i] = n.ownerDocument.createElementNS(AFNS,name);
 				for( var a in attrs )
 					c.setAttribute(a, attrs[a] );
 				n.appendChild( c );

@@ -55,7 +55,7 @@
 						<tr><th><input type="submit" value="Start"/></th><td></td></tr>
 						<tr><th>login		</th><td><input type="text"		name="login"	af:xpath="//af:repository" /></td></tr>
 						<tr><th>password	</th><td><input type="password" name="password"	af:xpath="//af:repository" /></td></tr>
-						<tr><th>Path		</th><td><input type="text"		name="path"		af:xpath="//af:repository" /></td></tr>
+						<tr><th>Path		</th><td><input type="text"		name="path"		af:xpath="//af:repository" value="{@path}"	/></td></tr>
 						<tr>
 							<th>Import routines</th>
 							<td>

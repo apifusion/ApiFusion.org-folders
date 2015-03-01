@@ -51,18 +51,13 @@
 				path="/ui"
 				rendermode="edit"
 				>
-		<folder name="ui" path="ui/vc">
-			<folder name="AMD" path="ui/AMD">
-				<file name="xml.js" path="ui/AMD/xml.js"/>
-			</folder>		
-			<folder name="vc" path="ui/vc" selected="1">
-				<file name="VcImport.js" path="ui/vc/VcImport.js"/>
-				<file name="VcImport.xsl" path="ui/vc/VcImport.xsl"/>
-			</folder>		
-			<folder name="WikiSideBar" path="ui/WikiSideBar">
-				<file name="VcImport.js" path="ui/vc/VcImport.js"/>
-			</folder>		
-			<file name="VcImport.js" path="ui/vc/VcImport.js"/>
+		<folder name="AMD" path="ui/AMD">
+			<file name="xml.js" path="ui/AMD/xml.js"/>
+		</folder>		
+		<folder name="vc" path="ui/vc" selected="1">
+			<file name="VcImport.js" path="ui/vc/VcImport.js"	/>
+			<file name="VcImport.xsl" path="ui/vc/VcImport.xsl"	/>
+			<file name="VcImport.xml" path="ui/vc/VcImport.xml"	/>
 		</folder>		
 	</repository>
 </af:vcimport>

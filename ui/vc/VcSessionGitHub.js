@@ -52,9 +52,10 @@ define([	"dojo/_base/declare","dojo/request"	,"dojo/Deferred","dojo/_base/array"
 			
 			return request( u, {handleAs:'json'} ).then( function(o)
 			{	// for each add the file/folder and recursively call
+				
 				o.forEach && o.forEach( function(o)
-				{	var $r = $x.createChild( o.type, o).$ret();
-$r.attr("selected",1);
+				{	var $r = $x.createChild( { dir : 'folder',file : 'file'}[o.type], o).$ret();
+$r.attr("selected",1);// collapsed
 					if( "dir" == o.type )
 						setTimeout(function()
 						{
