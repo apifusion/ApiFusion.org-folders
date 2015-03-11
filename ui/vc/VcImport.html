@@ -9,8 +9,8 @@
 		Transforms XML with XSLT, incorporate JS and CSS to serve rendered content.
 	-->
 	<style type="text/css">
+		@import "http://ajax.googleapis.com/ajax/libs/dojo/1.10.1/dojo/resources/dojo.css";
 		@import "/dojo/dojo/resources/dojo.css";
-		@import "/dojo/dgrid/css/skins/claro.css";
 			
 		table {border-collapse: collapse;}
 		td{ padding:0 0.3em 0  0.3em;}
@@ -33,8 +33,11 @@
 		.collapsible>input[type='checkbox']+label>u
 			{display:inline-block;line-height: 1em;}
 
-
+		label d{ color:Red;}
 	</style>
+	
+	<ZZscript src="http://ajax.googleapis.com/ajax/libs/dojo/1.10.1/dojo/dojo.js" type="text/javascript"
+		data-dojo-config="async: true,packages: [{name:'ui',location:'/ui'}]"></ZZscript>
 	<script src="/dojo/dojo/dojo.js" type="text/javascript"
 		data-dojo-config="async: true,packages: [{name:'ui',location:'/af/ui'}]"></script>
 	<script type="text/javascript">
@@ -45,8 +48,8 @@ af_timestamp()
 	pad(n,w){return(1e10+n+"").slice(-(w||2))}
 }
 
-require(["dojo/query", "dojo/parser", "ui/AMD/xml", "ui/AMD/xml!./VcImport.xml", "ui/AMD/xml!./VcImport.xsl", "dojo/domReady!"],
-function( $, parser, Xml, importXml, xsl )
+require(["dojo/query"	, "ui/vc/VcSessionAF"	, "ui/AMD/xml"	, "ui/AMD/xml!./VcImport.xml"	, "ui/AMD/xml!./VcImport.xsl"	,"dojo/Deferred", "dojo/domReady!"],
+function( $				, VcSessionAF			, Xml			, importXml						, xsl							, Deferred)
 {
 	render();
 	$("form").on("submit",startImport);
@@ -63,35 +66,71 @@ function( $, parser, Xml, importXml, xsl )
 	{	ev.stopPropagation();
 		var repo = $x( "//af:repository")
 			.attr( "rendermode", "view")
-			.attr( "af:importstartdate", new Date().toUTCString() )
+			.attr( "af:importstartdate", af_timestamp() )
 			.removeAttribute( "af:importenddate" );
 
-
 		render();
+//return;
 		var initO = {};
 		repo.$( "@*" ).forEach( function(a)
 			{ 
 				initO[a.name] = a.value; 
 			} );
+		var startPath = repo.attr("path");
+			if( startPath.charAt(0) == '/' )
+				startPath = startPath.substring(1);
 
-		$x( "//af:RepoTraverse/af:routine[@selected='1']")
-			.forEach( function( routineEl )
-			{	routineEl.setAttribute("start",af_timestamp());
-				require	(	[ routineEl.getAttribute("mid") ]
-						,	function( Routine )
-							{	
-								var r = new Routine( {ImportXml:importXml, RoutineEl:routineEl} );
-								r.Init(initO).then( function()
-								{	var p = repo.$("@path").val() ;
-									if( p.charAt(0) == '/' )
-										p = p.substring(1);
-									r.List( p, repo );
-								});
-							}
-						);
+
+		// 1. list folders in AF
+		var afSession = new VcSessionAF( {ImportXml:importXml, RoutineEl:repo.$("af:repository") } );
+		afSession
+		.Init(initO)
+		.then( function list_AF_folders()
+			{
+				return afSession.List( repo.attr("afref"), repo );
+			})
+		.then( function fuse_VC_Folders()
+			{
+				var $r = $x( "//af:RepoTraverse/af:routine[@selected='1']")
+					$r.attr("start",af_timestamp());
+					
+				var listed = new Deferred()
+				,	mid		= $r.attr("mid") ;
+				console.log( "require",mid );
+				require( [ mid ] ,function( Routine )
+				{	
+					var r = new Routine( {ImportXml:importXml, RoutineEl:$r} );
+						
+					r.Init(initO)
+						.then( function(){	return r.List( startPath, repo ); } )
+						.then(	function(   ){ listed.resolve();	}
+							,	function(err){ listed.reject(err);	}
+							);
+				});
+				return listed;
+			})
+		.then( function run_chosen_routines()
+			{
+				var done = new Deferred();
+				var $r = $x( "//af:routines/af:group//af:routine[@selected='1']")
+					$r.attr("start",af_timestamp());
+				$r.forEach( function( routineEl )
+				{	
+					require( [ routineEl.getAttribute("mid") ] ,function( Routine )
+					{	
+						var r = new Routine( {ImportXml:importXml, RoutineEl:routineEl} );
+						r.Init(initO)
+							.then( function(){	return r.List( startPath, repo ); } )
+							.then(	function(   ){ done.resolve();	}
+								,	function(err){ done.reject(err);	}
+								);
+					});
+				});
+				return done;
 			});
 		// setInterval(render,1000);
 		return false;
+		
 	}
 		function 
 	PauseImport()

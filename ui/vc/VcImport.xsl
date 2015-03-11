@@ -37,7 +37,7 @@
 	<xsl:template match="af:repository[@rendermode='edit']">
 		<xsl:variable name="repo" select="." />
 		<div class="VcImport_params">
-			<form onsubmit="return false;">
+			<form onsubmit="return false;" name="VcImport_params">
 				<table >
 					<tbody>
 						<tr><th>Repository	</th><td><input type="text" name="href"	af:xpath="//af:repository" 
@@ -56,6 +56,7 @@
 						<tr><th>login		</th><td><input type="text"		name="login"	af:xpath="//af:repository" /></td></tr>
 						<tr><th>password	</th><td><input type="password" name="password"	af:xpath="//af:repository" /></td></tr>
 						<tr><th>Path		</th><td><input type="text"		name="path"		af:xpath="//af:repository" value="{@path}"	/></td></tr>
+						<tr><th>AF Path		</th><td><input type="text"		name="afref"	af:xpath="//af:repository" value="{@afref}"	/></td></tr>
 						<tr>
 							<th>Import routines</th>
 							<td>
@@ -85,7 +86,10 @@
 		</xsl:if>
 		<label for="{$collapseId}">
 			<xsl:if test="*"><u>&triangledown;</u><s>&triangleright;</s></xsl:if>
+			<xsl:if test="@status='deleted'"><d>&#x02717;</d></xsl:if>
+			<xsl:if test="@status='created'"><c>&#x021D8;</c></xsl:if>
 			<span><xsl:value-of select="@name"/></span> 
+			<xsl:if test="@error"><e><xsl:value-of select="@error"/></e></xsl:if>
 		</label>		
 	</xsl:template>
 	<xsl:template mode="RoutiesGroup" match="af:group">

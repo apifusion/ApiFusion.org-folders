@@ -32,7 +32,8 @@
 				</group>				
 			</group>
 			<group name="ApiFusion">
-				<routine mid="ui/vc/VcApi_AfImportSimulator" name="Import Routine Simulator"	selected="1" />
+				<routine mid="ui/vc/VcSessionAF"			name="Import AF hierarchy"		selected="1" />
+				<routine mid="ui/vc/VcSessionSimulator"		name="Import Routine Simulator"	selected="1" />
 			</group>
 		</group>
 		<group	name="By file type" selected="1">
@@ -42,14 +43,15 @@
 				</group>
 			</group>
 			<group	name="Python">
-				<routine mid="ui/vc/VcApiSphynx"		name="Sphynx"	href="http://sphinx-doc.org" selected="1"/>
+				<routine mid="ui/vc/VcApiSphynx"		name="Sphynx"	href="http://sphinx-doc.org" selected="0"/>
 			</group>
 		</group>
 	</routines>
 	<repository href="https://github.com/apifusion/ApiFusion.org-folders.git" 
 				type="GitHub" 
-				path="/ui"
 				rendermode="edit"
+				path="/ui"
+				afref="ApiFusion.org/Sources/ui"
 				>
 		<folder name="AMD" path="ui/AMD">
 			<file name="xml.js" path="ui/AMD/xml.js"/>
@@ -58,6 +60,9 @@
 			<file name="VcImport.js" path="ui/vc/VcImport.js"	/>
 			<file name="VcImport.xsl" path="ui/vc/VcImport.xsl"	/>
 			<file name="VcImport.xml" path="ui/vc/VcImport.xml"	/>
+		</folder>		
+		<folder name="fakefolder" path="ui/fakefolder" error="aslkfsldkjf lskdf jldsj fl">
+			<file name="fake file" path="ui/fake_file"/>
 		</folder>		
 	</repository>
 </af:vcimport>

@@ -1,7 +1,5 @@
-﻿/**	Version Control session facade API. 
-	Its instance owns the implementation object specific for particular VC API.
-
-
+﻿/**	ApiFusion session API. 
+	
 */
 define([	"dojo/_base/declare","dojo/request"	,"dojo/Deferred","dojo/_base/array"	,"dojo/store/Memory","./VcSession"]
 , function( declare				,request		,Deferred		,array				,Memory				, VcSession				)
@@ -16,8 +14,8 @@ define([	"dojo/_base/declare","dojo/request"	,"dojo/Deferred","dojo/_base/array"
 
 
 	return declare( [VcSession],
-	{	repoParams	: {}
-	,	ApiUrl		: "https://api.github.com/repos"
+	{	repoParams	: { afref : "ApiFusion.org/Sources/ui" }
+	,	ApiUrl		: "../../php/Pages.php?title="
 	,	constructor	: function( /*Object*/ params )
 		{
 		}
@@ -31,11 +29,7 @@ define([	"dojo/_base/declare","dojo/request"	,"dojo/Deferred","dojo/_base/array"
 			});
 			
 			this.repoParams = kwArgs;
-			var url = this.repoParams.href;
-			console.log(url);
-			var u	= document.createElement('a');
-			u.href = url.replace('.git','');
-			this.ApiUrl += u.pathname + "/contents/" ;
+			//this.ApiUrl += this.repoParams.afref;
 			
 			// call auth and in callback 
 			d.resolve(1);
@@ -49,25 +43,30 @@ define([	"dojo/_base/declare","dojo/request"	,"dojo/Deferred","dojo/_base/array"
 
 			$x.attr("start"	, af_timestamp() );
 			$x.attr("end"	, 0 );
-			
+						
 			return request( u, {handleAs:'json'} ).then( function(o)
 			{	
 				$x.$("*").attr("status","deleted");
-				
-				o.forEach && o.forEach( function(o)
+				if( o.page_title != pathInRepo )
+					{	console.log( 'o.page_title != pathInRepo ',o.page_title, pathInRepo ); }
+				o.children.forEach && o.children.forEach( function(o)
 				{	
-					var nodeName = { dir : 'folder',file : 'file'}[o.type]
-					,	$r = $x.$("./af:"+nodeName+"[@name='"+o.name+"']");
+					var nodeName = 'folder'//{ dir : 'folder',file : 'file'}[o.type]
+					,	name		= o.page_title.split('/').pop()
+					,	$r = $x.$("*[@name='"+name+"']");
 					if( $r.length ) // exist - do nothing
 						$r.attr("status","found");
 					else
-						$r = $x.createChild( nodeName, o).$ret().attr("status","created");
+						$r = $x.createChild( nodeName, o).$ret()
+							.attr("status","created")
+							.attr("name",o.page_title.split('/').pop() )
+							.attr("path",o.page_title)
+							.attr("selected",1); // collapsed
 					
-					if( "dir" == o.type )
-						setTimeout(function()
-						{	$r.attr("selected",1); // collapsed
-							zs.List(o.path, $r);
-						},1000);
+					setTimeout(function()
+					{	
+						zs.List(o.page_title, $r); // todo mix deferred
+					},100);
 				});
 
 				$x.attr("end", af_timestamp() );
