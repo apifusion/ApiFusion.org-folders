@@ -39,6 +39,7 @@
 	{
 		var	d	= ( node || xPath[0] ).ownerDocument || node
 		,	nl	= [];
+		nl.ownerDocument = d;
 		if( "string" == typeof xPath )
 				nl = xpath2arr(xPath, node);
 		else
@@ -71,7 +72,11 @@
 			}			
 		}, nl );
 
-		nl.attr = nl.setAttribute; // alias
+		nl.attr = function( k,v )
+			{	return arguments.length>1 
+				? nl.setAttribute(k,v)
+				: nl[0] && nl[0].getAttribute(k);
+			}; 
 		nl.val	= function(){ return this[0] && this[0].value; }
 		nl.createChild = createChild;
 		nl.$ = function(xp)
@@ -80,9 +85,9 @@
 			{
 				ret.push.apply( ret, xpath2arr(xp,el) );
 			});
-			return XPath_nl(ret);
+			return XPath_nl( ret, d );
 		}
-		nl.$ret = function(){	return XPath_nl(this._ret); }
+		nl.$ret = function(){	return XPath_nl( this._ret, d ); }
 
 		return nl;
 
