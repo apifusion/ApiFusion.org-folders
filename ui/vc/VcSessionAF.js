@@ -29,7 +29,6 @@ define([	"dojo/_base/declare","dojo/request"	,"dojo/Deferred","dojo/_base/array"
 			});
 			
 			this.repoParams = kwArgs;
-			//this.ApiUrl += this.repoParams.afref;
 			
 			// call auth and in callback 
 			d.resolve(1);
@@ -47,28 +46,28 @@ define([	"dojo/_base/declare","dojo/request"	,"dojo/Deferred","dojo/_base/array"
 			return request( u, {handleAs:'json'} ).then( function(o)
 			{	
 				$x.$("*").attr("status","deleted");
-				if( o.page_title != pathInRepo )
-					{	console.log( 'o.page_title != pathInRepo ',o.page_title, pathInRepo ); }
-				o.children.forEach && o.children.forEach( function(o)
-				{	
-					var nodeName = 'folder'//{ dir : 'folder',file : 'file'}[o.type]
-					,	name		= o.page_title.split('/').pop()
-					,	$r = $x.$("*[@name='"+name+"']");
-					if( $r.length ) // exist - do nothing
-						$r.attr("status","found");
-					else
-						$r = $x.createChild( nodeName, o).$ret()
-							.attr("status","created")
-							.attr("name",o.page_title.split('/').pop() )
-							.attr("path",o.page_title)
-							.attr("selected",1); // collapsed
-					
-					setTimeout(function()
+				if(o)
+				{	if( o.page_title != pathInRepo )
+						{	console.log( 'o.page_title != pathInRepo ',o.page_title, pathInRepo ); }
+			
+					var darr = [];
+					o.children.forEach && o.children.forEach( function(o)
 					{	
-						zs.List(o.page_title, $r); // todo mix deferred
-					},100);
-				});
-
+						var nodeName = 'folder'//{ dir : 'folder',file : 'file'}[o.type]
+						,	name		= o.page_title.split('/').pop()
+						,	$r = $x.$("*[@name='"+name+"']");
+						if( $r.length ) // exist - do nothing
+							$r.attr("status","found");
+						else
+							$r = $x.createChild( nodeName, o).$ret()
+								.attr("status","created")
+								.attr("name",o.page_title.split('/').pop() )
+								.attr("path",o.page_title)
+								.attr("selected",1); // collapsed
+					
+							darr.push(zs.List(o.page_title, $r));
+					});
+				}
 				$x.attr("end", af_timestamp() );
 			}, function(err)
 			{	var msg = err.response && err.response.text || err;

@@ -11,10 +11,14 @@
 
 <p>Import stages:</p>
 <ol>
-	<li>Import Parameters</li>
+	<li>Edit Import Parameters</li>
 	<li>Read last import data</li>
-	<li>Retrival repository hierarchy</li>
-	<li>Traverce over VC repository structure and Run each selected import routine.</li>
+	<li>Retrival AF hierarchy</li>
+	<li>Retrival VC repository hierarchy</li>
+	<li>Traverce over imported hierarchy and Run each selected import routine.<br />
+		Repeated until whole hierarchy processed and each routine completed.</li>
+	<li>Once completed or interrupted the the hierarchy could be <strong>saved</strong> 
+		back to AF</li>
 </ol>
 <fieldset>
 	<legend>Modules</legend>
@@ -97,6 +101,33 @@
 	% against previous import results. If no previous import for
 	<var>
 	routine</var> found, those sections omitted.</fieldset>
+<fieldset>
+	<legend>RoutinesLoop</legend>
+	The processing tick will traverse over import hierarchy and for each node:
+	<ol>
+		<li>find the routine from selection list which does not have a clone within node </li>
+		<li>skip the routine if count(//routine[@end='0']) >= @activeRoutines limit reached</li>
+		<li>clone the routine node, set @start</li>
+		<li>create routine object by MID, passing hierarchy and routine nodes into constructor </li>
+		<li>for routines with @timeout create the timeout with set @error="timeout" on routine node and call routine.destroy()</li>
+		<li>call run() method directly if routine is async(has @timeout) in background  by setTimeout(0) wrapped by exception handler.<br />
+			Upon completion the timeout to be cancelled by invoking destroy()</li>
+	</ol>
+	The need for guard of routine.run() by executing in separate thread TBD. It could be handy for:
+	<ul>
+		<li>insulation of code as it could belong to uncontrolled third party</li>
+		<li>making the execution interruptable in case the processing takes too much time</li>
+		<li>insulation of memory pool as the routine could have a memory leak</li>
+	</ul>
+	Once the one of following conditions met the jailed run() execution 
+	must be implemented:
+	<ul>
+		<li>the file content is loaded into JS context. 
+			The streaming processing is a true solution but it is difficult to implement. 
+			It is simpler to work with content string loaded by XHR.</li>
+		<li>the 3rd-party routine allowed to run on AF import page.</li>
+	</ul>
+</fieldset>
 
 </body>
 </html>
