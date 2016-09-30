@@ -20,6 +20,9 @@
         #step2:checked ~ #form2,
         #step3:checked ~ #form3{ border: 1px dashed green; background-color: white; }
 
+        .processed{ color: green; }
+        .error{color: red; }
+
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 </head>
@@ -47,7 +50,7 @@
     <fieldset id="form2">
         <legend> <button>2. Select pages</button> </legend>
         <label>
-            <b> Namespaces             </b>
+            <b> Namespaces (<span class="total">?</span> pages)             </b>
             <i> Detected namespaces from source wiki.
                 Select one or several page namespaces to import. The page list will be repopulated on selection change.
 
@@ -69,7 +72,7 @@
         </label>
     </fieldset>
     <fieldset id="form3">
-        <legend> <button>3. Import</button> </legend>
+        <legend> 3. Imported pages </legend>
 
         <label>
             <b> Importing page <b>0</b> of <b class="total">0</b>             </b>
@@ -82,7 +85,7 @@
         </textarea>
     </fieldset>
     <script>
-$("label i").attr("tabindex","1").click(function (ev) {this.focus(); ev.preventDefault();    });
+$("label i").attr("tabindex","1").click( function( ev ){ this.focus(); ev.preventDefault(); });
 $("#form1 button").click(function ()
 {   $('#from-url s').hide();
     $.get( $('#from-url input').val() +"/index.php?title=Special:AllPages" ).done(function(data)
@@ -91,10 +94,9 @@ $("#form1 button").click(function ()
         ,   $ns = $('select')
         ,   nsIDs = [];
 
-        $ns.html("<option selected value=''>All</option>");
-        $pg.find('select option').each( function( i, op ){ $ns.append(op); });
-        $('#form3 .total').html('0')[0].value=0;
-        ListPages();
+        $ns.html("<option selected value='' title='All'>All</option>");
+        $pg.find('select option').each( function( i, op ){ $ns.append(op); op.title = op.innerHTML; });
+        RescanPages();
         $("#step2").prop('checked', true);
     }).fail(function()
     {
@@ -106,14 +108,25 @@ $("#form2 button").click(function ()
 {
    $("#step3").prop('checked', true);
 });
-$("#form3 button").click(function ()
+$("#form2 button").change(function ()
 {
   // $("#step2").prop('checked', true);
 });
+
+$("#form2 select").click( RescanPages );
+    function
+RescanPages()
+{
+    $('#form3 .total').html('0').val(0);
+    $('#form2 textarea').val('');
+    $( "select option" ).prop('className','');
+    ListPages();
+}
     function 
 ListPages()
 {
-    for( var $s = $( "select option:selected" ), i =0; i<$s.length; i++ )
+    var $s = $( "select option" ), i =1;
+    for( ; i<$s.length; i++ )
     {   var op = $s[i];
         if( !op.className )
             return PagesFromNS(op);
@@ -124,7 +137,7 @@ ListPages()
         function
     PagesFromNS( op )
     {        
-        if( op.value )
+        if( ( op.value && op.selected ) || $s[0].selected )
         {   op.className = "processing"; 
             $.get( $('#from-url input').val() +"/index.php?title=Special:AllPages&namespace=" + op.value ).done(function(data)
             {   var $pg = $(data)
@@ -132,9 +145,11 @@ ListPages()
                 ,   nsPages = 0;
 
                 $pg.find('.mw-allpages-table-chunk a').each( function( i, a ){ nsPages++; pages.value += a.title + '\n'; });
-                op.className = "processed"; 
-                var t = $('#form3 .total').html('0')[0].value*1 + nsPages;
-                $('#form3 .total').html(''+t)[0].value = t;
+                op.className = "processed";
+                op.innerHTML = op.title + ' ('+nsPages+')';
+                var $v = $('#form3 .total').html('0')
+                ,   t = $v.val()*1 + nsPages;
+                $('.total').html(''+t).val( t );
                 ListPages();
             }).fail(function()
             {
