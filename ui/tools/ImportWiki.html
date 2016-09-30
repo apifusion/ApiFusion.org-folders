@@ -54,7 +54,7 @@
             </i>
             <s> Wiki access error    </s>
             <select multiple="multiple">
-                <option selected="selected">All</option>
+                <option selected="selected" value=''>All</option>
             </select>
         </label>
         <label><input name="only-last"           type="checkbox" /> Include only the current revision, not the full history. </label>
@@ -65,16 +65,14 @@
                 Remove the pages from list if do not want them to be imported. <br/>
                 If you  have list handy as pege per line, copy-paste it here. </i>
             <s> Wiki access error    </s>
-            <textarea rows="10">
-
-            </textarea>
+            <textarea rows="10"></textarea>
         </label>
     </fieldset>
     <fieldset id="form3">
         <legend> <button>3. Import</button> </legend>
 
         <label>
-            <b> Importing page <b>0</b> of <b>0</b>             </b>
+            <b> Importing page <b>0</b> of <b class="total">0</b>             </b>
             <i> Full wiki root URL with content to be copied   </i>
             <s> import error    </s>
             <input name="from-url" type="text" placeholder="importing page ... " />
@@ -90,11 +88,13 @@ $("#form1 button").click(function ()
     $.get( $('#from-url input').val() +"/index.php?title=Special:AllPages" ).done(function(data)
     {
         var $pg = $(data)
-        ,   $ns = $('select');
+        ,   $ns = $('select')
+        ,   nsIDs = [];
 
-        $ns.html("<option>All</option>");
+        $ns.html("<option selected value=''>All</option>");
         $pg.find('select option').each( function( i, op ){ $ns.append(op); });
-
+        $('#form3 .total').html('0')[0].value=0;
+        ListPages();
         $("#step2").prop('checked', true);
     }).fail(function()
     {
@@ -110,7 +110,47 @@ $("#form3 button").click(function ()
 {
   // $("#step2").prop('checked', true);
 });
+    function 
+ListPages()
+{
+    for( var $s = $( "select option:selected" ), i =0; i<$s.length; i++ )
+    {   var op = $s[i];
+        if( !op.className )
+            return PagesFromNS(op);
+    }
+    // todo stop progress
+    $("#step2").prop('checked', true);
 
+        function
+    PagesFromNS( op )
+    {        
+        if( op.value )
+        {   op.className = "processing"; 
+            $.get( $('#from-url input').val() +"/index.php?title=Special:AllPages&namespace=" + op.value ).done(function(data)
+            {   var $pg = $(data)
+                ,   pages = $('#form2 textarea')[0]
+                ,   nsPages = 0;
+
+                $pg.find('.mw-allpages-table-chunk a').each( function( i, a ){ nsPages++; pages.value += a.title + '\n'; });
+                op.className = "processed"; 
+                var t = $('#form3 .total').html('0')[0].value*1 + nsPages;
+                $('#form3 .total').html(''+t)[0].value = t;
+                ListPages();
+            }).fail(function()
+            {
+                op.className = "error";
+                ListPages();
+            });   
+        }else
+        {   op.className = "processed"; 
+            ListPages();
+        }            
+    }
+}
     </script>
+    ToDo:
+    <ul>
+        <li>Progress indicator</li>
+    </ul>
 </body>
 </html>
