@@ -4,14 +4,15 @@
     <meta charset="UTF-8" />
     <title>Import pages from mediawiki </title>
     <style>
-        fieldset{max-width: 50em;}
+        input[type=radio]{display:none;}
+        fieldset {    max-width: 44%;    display: inline-block;    vertical-align: top; }
         input[type=text], textarea, select {width: 100%;}
         label{ display:block;}
         fieldset,label{margin-bottom: 1em;}
         fieldset label s{ display: none; text-decoration: none; margin-left: 4em; color : red; }
         label b{    line-height: 140%;}
-        label i{display:inline-block; position: absolute; visibility: hidden; padding: 2px;}
-        label i:before{ content: "?"; border-radius: 1em; border: black 2px solid;padding:0 0.4em;visibility: visible;}
+        label i{display:inline-block; position: absolute; visibility: hidden; }
+        label i:before{ content: "?"; border-radius: 1em; border: #AAA 1px solid;  box-shadow: 0 0 2px 1px #777;padding:0 0.3em;visibility: visible;}
         label i:hover,
         label i:focus{  color:#FFF; font-weight:bold;visibility: visible;background-color: #777; border-radius: 1em; padding: 1em;}
 
@@ -24,7 +25,7 @@
         .error{color: red; }
 
     </style>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.js"></script>
 </head>
 <body>
     <h1>Import pages from mediawiki</h1>
@@ -32,7 +33,7 @@
     <input type="radio" name="step"                   id="step2"/>
     <input type="radio" name="step"                   id="step3"/>
     <fieldset id="form1">
-        <legend> <button>1. Check connection</button> </legend>
+        <legend> <button>1. Read pages list</button> </legend>
         <label id="from-url">
             <b> From URL             </b>
             <i> Full root URL of wiki with content to be copied   </i>
@@ -48,7 +49,7 @@
         </label>
     </fieldset>
     <fieldset id="form2">
-        <legend> <button>2. Select pages</button> </legend>
+        <legend> <button>2. Import selected pages</button> </legend>
         <label>
             <b> Namespaces (<span class="total">?</span> pages)             </b>
             <i> Detected namespaces from source wiki.
@@ -59,6 +60,13 @@
             <select multiple="multiple">
                 <option selected="selected" value=''>All</option>
             </select>
+        </label>
+        <label id="root-page">
+            <b> Destination root page (optional)            </b>
+            <i> Root page where pages will be imported as child tree   </i>
+            <s> Page not exist - todo    </s>
+            <input name="rootpage" type="text" placeholder="type wiki root page for import "
+                value=""/>
         </label>
         <label><input name="only-last"           type="checkbox" /> Include only the current revision, not the full history. </label>
         <label><input name="include-template"    type="checkbox" /> Include templates. </label>
@@ -75,10 +83,10 @@
         <legend> 3. Imported pages </legend>
 
         <label>
-            <b> Importing page <b>0</b> of <b class="total">0</b>             </b>
+            <b> Importing page <b class="imported">0</b> of <b class="total">0</b>             </b>
             <i> Full wiki root URL with content to be copied   </i>
             <s> import error    </s>
-            <input name="from-url" type="text" placeholder="importing page ... " />
+            <input name="page-url" type="text" placeholder="importing page ... " />
         </label>
         <textarea rows="15">
             imported pages list
@@ -106,7 +114,85 @@ $("#form1 button").click(function ()
 });
 $("#form2 button").click(function ()
 {
-   $("#step3").prop('checked', true);
+    $("#step3").prop('checked', true);
+    var pages = $("#form2 textarea").val().split('\n')
+    ,   imported = 0;
+    $("#form3 textarea").val('');
+    
+    var importPage = function ()
+    {
+        if( !pages.length )
+            return; // todo end progress
+        var page = pages.shift()
+        ,   rootpage = $('#root-page input').val() 
+        ,   fromUrl = $('#from-url input').val() +"/index.php?title=Special:Export&action=submit";
+
+        if( !page )
+            return importPage();
+
+        $("#form3 input").val(page);
+        $("#form2 textarea").val(pages.join('\n'));
+
+        $.post  (   fromUrl
+                ,   {   pages:page
+                    ,   curonly:$('input[name="only-last"]').is(':checked')?1:0
+                    ,   templates:$('input[name="include-template"]').is(':checked')?1:0
+                    ,   catname:''
+                    }
+                , function(data)
+                    { return data;
+                    }
+                ,  'text' 
+                )
+        .done(function(xmlStr)
+        {
+            $.get($('#to-url input').val() +"/api.php?action=query&prop=info%7Crevisions&intoken=edit&rvprop=timestamp&format=json&titles="+page )
+            .done( function( token )
+            {
+                var editToken = getEditToken(token)
+                ,   fd = new FormData();
+                fd.append("action","submit");
+                fd.append("source","upload");
+                fd.append("xmlimport",new Blob([xmlStr], { type: "text/xml"}), "ApiFusion-20160928043520.xml" );// name="xmlimport"; filename="ApiFusion-20160928043520.xml" Content-Type: text/xml
+
+
+                fd.append("log-comment" ,"ImportWiki.html from "+fromUrl + " ;" + page );
+                fd.append("rootpage"    ,rootpage   );
+                fd.append("editToken"   ,editToken  );
+
+                $.ajax  ({  url:   $('#to-url input').val() +"/index.php?title=Special:Import&action=submit"
+                        ,   type:   "POST"
+                        ,   data:   fd
+                        ,   processData: false
+                        ,   contentType: false
+                        ,   success :   function(importStr)
+                            {   var ePos = importStr.indexOf('Import failed');
+                                if( ePos >= 0 )
+                                    return erroLog( importStr.substring( ePos, ePos+500 ));
+
+                                $('.imported').html( ++imported );
+                                $("#form3 textarea")[0].value += page+'\n';
+                                importPage();
+                            }
+                        }).fail( erroLog );
+            }).fail( erroLog );
+        }).fail( erroLog );
+            function 
+        erroLog(err)
+        {   err && $('#form3 s').html(err.substring( 0, 73 ));
+            console.error( err && err.substring(0,300) );
+            $('#form3 s').show(); 
+        }   
+            function 
+        getEditToken( token )
+        {   
+            for( var p in token.query.pages )
+                return token.query.pages[p].edittoken;
+            debugger;
+            console.error( "edittoken not found in", token );
+        }
+    };
+    importPage();
 });
 $("#form2 button").change(function ()
 {
@@ -163,9 +249,11 @@ ListPages()
     }
 }
     </script>
-    ToDo:
+    <p>ToDo:</p>
     <ul>
         <li>Progress indicator</li>
+        <li>stop XHRs when namespace selected</li>
     </ul>
+
 </body>
 </html>
