@@ -22,7 +22,7 @@ if( $arr && count($arr) > 1 )
 $dbr = wfGetDB( DB_MASTER );
 
 	$nsArr = array();
-	$res = $dbr->query("select page_namespace as ns from wiki_page where page_title='$title' ");
+	$res = $dbr->query("select page_namespace as ns from " . $wgDBprefix ."page where page_title='$title' ");
 	foreach( $res as $row1 )
 	       array_push($nsArr, $row1->ns);	
 echo '[';
