@@ -45,7 +45,7 @@
             <b> To wiki URL          </b>
             <i> import wiki root URL </i>
             <s> Wiki access error    </s>
-            <input  name="to-url" type="text" value="/wiki" />
+            <input  name="to-url" type="text" value="/af/wiki" />
         </label>
     </fieldset>
     <fieldset id="form2">
@@ -166,9 +166,12 @@ $("#form2 button").click(function ()
                         ,   processData: false
                         ,   contentType: false
                         ,   success :   function(importStr)
-                            {   var ePos = importStr.indexOf('Import failed');
+                            {   var ePos = importStr.indexOf('Import failed')
+                                ,   pPos = importStr.indexOf('do not have permission');
                                 if( ePos >= 0 )
                                     return erroLog( importStr.substring( ePos, ePos+500 ));
+                                if( pPos >= 0 )
+                                    return erroLog( importStr.substring( pPos, pPos+400 ));
 
                                 $('.imported').html( ++imported );
                                 $("#form3 textarea")[0].value += page+'\n';
@@ -179,8 +182,8 @@ $("#form2 button").click(function ()
         }).fail( erroLog );
             function 
         erroLog(err)
-        {   err && $('#form3 s').html(err.substring( 0, 73 ));
-            console.error( err && err.substring(0,300) );
+        {   err && $('#form3 s').html(err);
+            console.error( err );
             $('#form3 s').show(); 
         }   
             function 
