@@ -6,7 +6,7 @@ define([ "dojo/query"	, "dojo/request",	"dojo/promise/all"	,	"dojo/_base/array"	
 //		var mw;
 	var DEFNS = 'Default'
 	,	curNS	= (mw && mw.config.get( 'wgCanonicalNamespace' )) || DEFNS
-	,	afRoot	= (mw && mw.config.get( 'wgScriptPath' ) || '.')+"/../"
+	,	afRoot	= require.toUrl('af')
 	,	pageTitle	= (mw && mw.config.get( 'wgTitle' ) ) || ''
 	,	pages		= pageTitle.split('/');
 

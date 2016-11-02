@@ -3,9 +3,9 @@
 
 error_reporting(-1);
 ini_set('display_errors', 'On');
-putenv( 'MW_INSTALL_PATH='. realpath( dirname( __FILE__ ) . '/../wiki') );
+putenv( 'MW_INSTALL_PATH='. realpath( dirname( __FILE__ ) . '/../../wiki') );
 header('Content-Type: application/json');
-require realpath( dirname( __FILE__ ) . '/../wiki/includes/WebStart.php' );
+require realpath( dirname( __FILE__ ) . '/../../wiki/includes/WebStart.php' );
 
 
 $fullTitle = str_replace ( ' ' , '_', $_REQUEST['title'] );

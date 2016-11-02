@@ -3,8 +3,8 @@
 
 error_reporting(-1);
 ini_set('display_errors', 'On');
-putenv( 'MW_INSTALL_PATH='. realpath( dirname( __FILE__ ) . '/../wiki') );
-require realpath( dirname( __FILE__ ) . '/../wiki/includes/WebStart.php' );
+putenv( 'MW_INSTALL_PATH='. realpath( dirname( __FILE__ ) . '/../../wiki') );
+require realpath( dirname( __FILE__ ) . '/../../wiki/includes/WebStart.php' );
 
 header('Content-Type: application/json');
 
