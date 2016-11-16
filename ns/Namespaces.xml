@@ -17,24 +17,24 @@
 <api>
 	<query>
 		<namespaces>
-			<ns id="-2" 	bit="0"		case="first-letter" xml:space="preserve" 								canonical="Media" 			>Media</ns>
-			<ns id="-1" 	bit="1"		case="first-letter" xml:space="preserve" 								canonical="Special" 		>Special</ns>
-			<ns id="0"		bit="2"		case="first-letter" xml:space="preserve" content="" 					canonical="" 				>Default</ns>
-			<ns id="1"		bit="3"		case="first-letter" xml:space="preserve" subpages="" category="talk"	canonical="Talk"			>Talk</ns>
-			<ns id="2"		bit="4"		case="first-letter" xml:space="preserve" subpages="" 					canonical="User" 			>User</ns>
-			<ns id="3"		bit="5"		case="first-letter" xml:space="preserve" subpages="" category="talk" 	canonical="User talk"		>User talk</ns>
-			<ns id="4"		bit="6"		case="first-letter" xml:space="preserve" subpages="" 					canonical="Project" 		>ApiFusion</ns>
-			<ns id="5"		bit="7"		case="first-letter" xml:space="preserve" subpages="" category="talk"	canonical="Project talk"	>ApiFusion talk</ns>
-			<ns id="6"		bit="8"		case="first-letter" xml:space="preserve" 								canonical="File" 			>File</ns>
-			<ns id="7"		bit="9"		case="first-letter" xml:space="preserve" subpages="" category="talk"	canonical="File talk"		>File talk</ns>
-			<ns id="8"		bit="10"	case="first-letter" xml:space="preserve" subpages="" 					canonical="MediaWiki" 		>MediaWiki</ns>
-			<ns id="9"		bit="11"	case="first-letter" xml:space="preserve" subpages="" category="talk"	canonical="MediaWiki talk"	>MediaWiki talk</ns>
-			<ns id="10" 	bit="12"	case="first-letter" xml:space="preserve" 								canonical="Template" 		>Template</ns>
-			<ns id="11" 	bit="13"	case="first-letter" xml:space="preserve" subpages="" category="talk"	canonical="Template talk"	>Template talk</ns>
-			<ns id="12" 	bit="14"	case="first-letter" xml:space="preserve" subpages="" 					canonical="Help" 			>Help</ns>
-			<ns id="13" 	bit="15"	case="first-letter" xml:space="preserve" subpages="" category="talk"	canonical="Help talk"		>Help talk</ns>
-			<ns id="14" 	bit="16"	case="first-letter" xml:space="preserve" 								canonical="Category" 		>Category</ns>
-			<ns id="15" 	bit="17"	case="first-letter" xml:space="preserve" subpages="" category="talk"	canonical="Category talk"	>Category talk</ns>
+			<ns id="-2" 	bit="0"		case="first-letter" xml:space="preserve" 										canonical="Media" 						>Media</ns>
+			<ns id="-1" 	bit="1"		case="first-letter" xml:space="preserve" 										canonical="Special" 					>Special</ns>
+			<ns id="0"		bit="2"		case="first-letter" xml:space="preserve" content="" 							canonical="" 							>Default</ns>
+			<ns id="1"		bit="3"		case="first-letter" xml:space="preserve" subpages="" 			category="talk"	canonical="Talk"						>Talk</ns>
+			<ns id="2"		bit="4"		case="first-letter" xml:space="preserve" subpages="" 							canonical="User" 						>User</ns>
+			<ns id="3"		bit="5"		case="first-letter" xml:space="preserve" subpages="" 			category="talk" canonical="User talk"					>User talk</ns>
+			<ns id="4"		bit="6"		case="first-letter" xml:space="preserve" subpages="" 							canonical="Project" 					>ApiFusion</ns>
+			<ns id="5"		bit="7"		case="first-letter" xml:space="preserve" subpages="" 			category="talk"	canonical="Project talk"				>ApiFusion talk</ns>
+			<ns id="6"		bit="8"		case="first-letter" xml:space="preserve" 										canonical="File" 						>File</ns>
+			<ns id="7"		bit="9"		case="first-letter" xml:space="preserve" subpages="" 			category="talk"	canonical="File talk"					>File talk</ns>
+			<ns id="8"		bit="10"	case="first-letter" xml:space="preserve" subpages="" 							canonical="MediaWiki" 					>MediaWiki</ns>
+			<ns id="9"		bit="11"	case="first-letter" xml:space="preserve" subpages="" 			category="talk"	canonical="MediaWiki talk"				>MediaWiki talk</ns>
+			<ns id="10" 	bit="12"	case="first-letter" xml:space="preserve" 										canonical="Template" 					>Template</ns>
+			<ns id="11" 	bit="13"	case="first-letter" xml:space="preserve" subpages="" 			category="talk"	canonical="Template talk"				>Template talk</ns>
+			<ns id="12" 	bit="14"	case="first-letter" xml:space="preserve" subpages="" 							canonical="Help" 						>Help</ns>
+			<ns id="13" 	bit="15"	case="first-letter" xml:space="preserve" subpages="" 			category="talk"	canonical="Help talk"					>Help talk</ns>
+			<ns id="14" 	bit="16"	case="first-letter" xml:space="preserve" 										canonical="Category" 					>Category</ns>
+			<ns id="15" 	bit="17"	case="first-letter" xml:space="preserve" subpages="" 			category="talk"	canonical="Category talk"				>Category talk</ns>
 			<ns id="83000" 	bit="18"	case="first-letter" xml:space="preserve" category="Documents"					canonical="Requirements"				>Requirements</ns>
 			<ns id="83001" 	bit="19"	case="first-letter" xml:space="preserve" 						category="talk"	canonical="Requirements talk"			>Requirements talk</ns>
 			<ns id="83100" 	bit="20"	case="first-letter" xml:space="preserve" category="Documents"					canonical="WishList"					>WishList</ns>

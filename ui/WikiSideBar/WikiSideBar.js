@@ -1,4 +1,4 @@
-define([ "dojo/query"	, "dojo/request",	"dojo/promise/all"	,	"dojo/_base/array"	,"dojo/store/Memory"	,"dojo/store/JsonRest"	,"dijit/tree/ObjectStoreModel"	, "dijit/Tree"	, "dijit/form/CheckBox"	,"dijit/tree/dndSource"	, "dojo/ready", "dojo/NodeList-manipulate" ]
+require([ "dojo/query"	, "dojo/request",	"dojo/promise/all"	,	"dojo/_base/array"	,"dojo/store/Memory"	,"dojo/store/JsonRest"	,"dijit/tree/ObjectStoreModel"	, "dijit/Tree"	, "dijit/form/CheckBox"	,"dijit/tree/dndSource"	, "dojo/ready", "dojo/NodeList-manipulate" ]
 , function( $			, request		,	all					,	array				, Memory				, JsonRest				,ObjectStoreModel				, Tree			, CheckBox				, dndSource				, ready )
 {
 
@@ -12,12 +12,7 @@ define([ "dojo/query"	, "dojo/request",	"dojo/promise/all"	,	"dojo/_base/array"	
 
 	ready( function()
 	{
-		var css=document.createElement("link");
-		css.setAttribute("rel", "stylesheet");
-		css.setAttribute("type", "text/css");
-		css.setAttribute("href", "https://ajax.googleapis.com/ajax/libs/dojo/1.10.1/dijit/themes/claro/claro.css");
-		document.getElementsByTagName("head")[0].appendChild(css)
-  		document.body.className += " claro";
+		document.body.className += " claro";
 
 		all([ request( afRoot+"ns/Namespaces.xml"				, { handleAs:"xml"	} )
 			, request( afRoot+"php/PageNS.php?title="+pageTitle	, { handleAs:"json"	} ) 
@@ -29,6 +24,7 @@ define([ "dojo/query"	, "dojo/request",	"dojo/promise/all"	,	"dojo/_base/array"	
 		createPagesTree("#p-Pages div ul"			,getRoot( getPageId(1)	), pathToCurrent(1, pages) );
 
 		$(".Page_Select_Control").forEach( init_Page_Select_Control );
+		require([ afAction2mid[ mw.config.get( 'wgAction' ) ] ]);
     });
 	return {};
 

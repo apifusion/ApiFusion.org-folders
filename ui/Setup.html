@@ -12,14 +12,15 @@
 	</li>
 	<li>
 <pre>/* Any JavaScript here will be loaded for all users on every page load. */
+var afAction2mid ={protect:"af/af-acl/protect"};
 var dojoConfig = {   async: true,   packages:        [{      name: "af", location: "/af/ApiFusion.org-folders/"  }],   deps:["af/ui/WikiSideBar/WikiSideBar"]};
 
 (function(d,s,h)
-{	h=d.getElementsByTagName('head')[0]||d.getElementsByTagName('div')[0]||document.documentElement;
-	s=d.createElementNS?d.createElementNS(h.namespaceURI||'http://www.w3.org/1999/xhtml','script'):
-	d.createElement('script');
-	s.setAttribute('src','//ajax.googleapis.com/ajax/libs/dojo/1.10.1/dojo/dojo.js');
-	h.appendChild(s);
+{h=d.getElementsByTagName('head')[0]||d.getElementsByTagName('div')[0]||document.documentElement;
+s=d.createElementNS?d.createElementNS(h.namespaceURI||'http://www.w3.org/1999/xhtml','script'):
+d.createElement('script');
+s.setAttribute('src','//ajax.googleapis.com/ajax/libs/dojo/1.11.2/dojo/dojo.js');
+h.appendChild(s);
 })(document);
 </pre>
 	</li>
@@ -28,6 +29,7 @@ var dojoConfig = {   async: true,   packages:        [{      name: "af", locatio
 	</li>
 	<li>
 <pre>/* CSS placed here will be applied to all skins */
+@import url("https://ajax.googleapis.com/ajax/libs/dojo/1.10.1/dijit/themes/claro/claro.css");
 @import url("/af/ApiFusion.org-folders/ui/WikiSideBar/WikiSideBar.css");
 </pre>	
 	</li>
