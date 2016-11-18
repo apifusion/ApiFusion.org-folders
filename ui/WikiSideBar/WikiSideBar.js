@@ -1,5 +1,5 @@
-require([ "dojo/query"	, "dojo/request",	"dojo/promise/all"	,	"dojo/_base/array"	,"dojo/store/Memory"	,"dojo/store/JsonRest"	,"dijit/tree/ObjectStoreModel"	, "dijit/Tree"	, "dijit/form/CheckBox"	,"dijit/tree/dndSource"	, "dojo/ready", "dojo/NodeList-manipulate" ]
-, function( $			, request		,	all					,	array				, Memory				, JsonRest				,ObjectStoreModel				, Tree			, CheckBox				, dndSource				, ready )
+require([ "dojo/query"	, "dojo/request",	"dojo/promise/all"	,	"dojo/_base/array"	,"dojo/store/Memory"	,"dojo/store/JsonRest"	,"dijit/tree/ObjectStoreModel"	, "dijit/Tree"	, "dijit/form/CheckBox"	,"dijit/tree/dndSource"	,"dojo/topic"   ,"dojo/ready", "dojo/NodeList-manipulate" ]
+, function( $			, request		,	all					,	array				, Memory				, JsonRest				,ObjectStoreModel				, Tree			, CheckBox				, dndSource				,topic          , ready )
 {
 
 //	if( typeof mw == 'undefined' )
@@ -68,6 +68,9 @@ createPagesTree(cssSelector, getRoot, curPath)
 				,	zs	= this
 				,	name= o.page_title.split('/').pop();
 				ret.labelNode.innerHTML = '<a href="'+getLinkPage(o)+'">'+name+'</a>';
+                if( 'view'!= mw.config.get('wgAction') )
+                    new CheckBox({	onChange: function(b){	ret.item.selected = b; topic.publish("title/checked",ret.item); }})
+                    .placeAt( ret.labelNode, "first");
 				return ret;
 			}
     }, $(cssSelector)[0]);
@@ -180,13 +183,9 @@ createTree( cssSelector, myModel, curPath, getLink, nsArr )
 					if( b ) 
 						ret.labelNode.className += " nsFound ";
 				}
-				var cb = new CheckBox(
-				{	onChange: function(b)
-					{	ret.item.selected = b;
-						console.log( ret.item, b );
-					}
-				});
-				cb.placeAt( ret.labelNode, "first");
+				if( 'view'!= mw.config.get('wgAction') )
+                    new CheckBox({	onChange: function(b){	ret.item.selected = b; topic.publish("namespace/checked",ret.item); }})
+                    .placeAt( ret.labelNode, "first");
 
 				return ret;
 			}
