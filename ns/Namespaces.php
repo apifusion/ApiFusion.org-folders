@@ -89,8 +89,13 @@ function AF_NSInitFromXml()
     	$attr = $nsEntry->attributes();
     	$id = $attr['id'];
         $name = $attr['canonical'];
+        $cat  = $attr['category'];
     	if( $id*1 >600 )
     	    NS_ApiFusionInitNS( 1*$id, $name );
-    //    $afNsBitMask[$name] = 1<< ($attr['bit']*1);
+    	if( !isset($afNsBitMask[$cat]) )
+            $afNsBitMask[$cat] = 0;
+    	$b = 1<< ($attr['bit']*1);
+        $afNsBitMask[$name] = $b;
+        $afNsBitMask[$cat] |= $b;
     }
 }

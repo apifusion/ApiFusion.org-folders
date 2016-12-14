@@ -28,4 +28,3 @@ $dbr = wfGetDB( DB_MASTER );
 echo '[';
 	echo implode(',',$nsArr);
 echo ']';
-?>
