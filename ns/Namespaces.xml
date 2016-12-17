@@ -17,9 +17,9 @@
 <api>
 	<query>
 		<namespaces>
-			<ns id="-2" 	bit="0"		case="first-letter" xml:space="preserve" 										canonical="Media" 						>Media</ns>
-			<ns id="-1" 	bit="1"		case="first-letter" xml:space="preserve" 										canonical="Special" 					>Special</ns>
-			<ns id="0"		bit="2"		case="first-letter" xml:space="preserve" content="" 							canonical="" 							>Default</ns>
+			<ns id="-2" 	bit="0"		case="first-letter" xml:space="preserve" category="Special"						canonical="Media" 						>Media</ns>
+			<ns id="-1" 	bit="1"		case="first-letter" xml:space="preserve" category="Special"						canonical="Special" 					>Special</ns>
+			<ns id="0"		bit="2"		case="first-letter" xml:space="preserve" content="" 			category=""		canonical="" 							>Default</ns>
 			<ns id="1"		bit="3"		case="first-letter" xml:space="preserve" subpages="" 			category="talk"	canonical="Talk"						>Talk</ns>
 			<ns id="2"		bit="4"		case="first-letter" xml:space="preserve" subpages="" 							canonical="User" 						>User</ns>
 			<ns id="3"		bit="5"		case="first-letter" xml:space="preserve" subpages="" 			category="talk" canonical="User talk"					>User talk</ns>
