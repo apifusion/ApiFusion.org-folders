@@ -5,7 +5,7 @@
 # http://localhost:8480/af/wiki/api.php?action=query&meta=siteinfo&siprop=namespaces&format=xml
 
 $afNsBitMask = [];
-
+$afNsCat = [];
 
 define("NS_FOO", 500);
 define("NS_FOO_TALK", 501);
@@ -81,7 +81,7 @@ function NS_ApiFusionInitNS( $id, $name )
 
 function AF_NSInitFromXml()
 {
-    global $afNsBitMask;
+    global $afNsBitMask, $afNsCat;
 
     $xmlObj = simplexml_load_file( __DIR__ . "/Namespaces.xml" );
     foreach( $xmlObj->query->namespaces->ns as $nsEntry )
@@ -93,9 +93,9 @@ function AF_NSInitFromXml()
     	if( $id*1 >600 )
     	    NS_ApiFusionInitNS( 1*$id, $name );
     	if( !isset($afNsBitMask[$cat]) )
-            $afNsBitMask[$cat] = 0;
+            { $afNsBitMask[$cat] = 0; $afNsCat [$cat] = []; }
     	$b = 1<< ($attr['bit']*1);
-        $afNsBitMask[$name] = $b;
+        $afNsCat [$cat][$name] = $afNsBitMask[$name] = $b;
         $afNsBitMask[$cat] |= $b;
     }
     $afNsBitMask[ '' ] = -1;
