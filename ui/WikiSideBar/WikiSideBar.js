@@ -6,7 +6,7 @@ require([ "dojo/query"	, "dojo/request",	"dojo/promise/all"	,	"dojo/_base/array"
 //		var mw;
 	var DEFNS = 'Default'
 	,	curNS	= (mw && mw.config.get( 'wgCanonicalNamespace' )) || DEFNS
-	,	afRoot	= require.toUrl('af')
+	,	afRoot	= require.toUrl('af')+'/'
 	,	pageTitle	= (mw && mw.config.get( 'wgTitle' ) ) || ''
 	,	pages		= pageTitle.split('/');
 
@@ -24,7 +24,8 @@ require([ "dojo/query"	, "dojo/request",	"dojo/promise/all"	,	"dojo/_base/array"
 		createPagesTree("#p-Pages div ul"			,getRoot( getPageId(1)	), pathToCurrent(1, pages) );
 
 		$(".Page_Select_Control").forEach( init_Page_Select_Control );
-		require([ afAction2mid[ mw.config.get( 'wgAction' ) ] ]);
+		var mid = afAction2mid[ mw.config.get( 'wgAction' ) ];
+		mid && require([ mid ]);
     });
 	return {};
 

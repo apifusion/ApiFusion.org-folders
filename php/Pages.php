@@ -3,8 +3,10 @@
 
 error_reporting(-1);
 ini_set('display_errors', 'On');
-putenv( 'MW_INSTALL_PATH='. realpath( dirname( __FILE__ ) . '/../../wiki') );
-require realpath( dirname( __FILE__ ) . '/../../wiki/includes/WebStart.php' );
+$wikiFolder = isset($_SERVER["HTTP_REFERER"]) ? explode('/', $_SERVER["HTTP_REFERER"] )[4] : "wiki";
+
+putenv( 'MW_INSTALL_PATH='. realpath( dirname( __FILE__ ) . '/../../'.$wikiFolder) );
+require realpath( dirname( __FILE__ ) . '/../../'.$wikiFolder.'/includes/WebStart.php' );
 
 header('Content-Type: application/json');
 
@@ -25,17 +27,18 @@ if( empty( $parentTitle ) )
 	$parentTitle = 'Main_Page';
 
 $dbr = wfGetDB( DB_MASTER );
+$pageTable = $dbr->tableName( "page" );
 
-	$res = $dbr->query("select page_title, count(page_namespace) as nsCount from " . $wgDBprefix ."page where page_title='$title' GROUP BY page_title");
+	$res = $dbr->query("select page_title, count(page_namespace) as nsCount from " . $pageTable ." where page_title='$title' GROUP BY page_title");
 	foreach( $res as $row1 )
 	{       $t = $row1->page_title;
 		$cldSql = 'Main_Page' == $title 
 			? " page_title NOT LIKE '%/%' and NOT(page_title='Main_Page') " 
 			: " page_title LIKE '$t/%' and page_title NOT LIKE '$t/%/%' ";
-		$cldCount = ", (SELECT COUNT( * ) FROM (SELECT page_title FROM " . $wgDBprefix ."page GROUP BY page_title)p2 WHERE p2.page_title LIKE CONCAT( p1.page_title,  '/%' ) AND p2.page_title NOT LIKE CONCAT( p1.page_title,  '/%/%' ))childrenCount";
+		$cldCount = ", (SELECT COUNT( * ) FROM (SELECT page_title FROM " . $pageTable ." GROUP BY page_title)p2 WHERE p2.page_title LIKE CONCAT( p1.page_title,  '/%' ) AND p2.page_title NOT LIKE CONCAT( p1.page_title,  '/%/%' ))childrenCount";
 
 		echo '{ "nsCount":'. $row1->nsCount.',"page_title":"'. $t .'","parent":"$parentTitle",children:[ ';	
-		$sql = "select p1.page_title, count(p1.page_namespace) as nsCount $cldCount from " . $wgDBprefix ."page p1 where $cldSql and (p1.page_namespace > 1000 or p1.page_namespace=0) GROUP BY page_title";
+		$sql = "select p1.page_title, count(p1.page_namespace) as nsCount $cldCount from " . $pageTable ." p1 where $cldSql and (p1.page_namespace > 1000 or p1.page_namespace=0) GROUP BY page_title";
 //echo $sql.'<br/>';
 		$res2 = $dbr->query($sql);
 		$children = array();
@@ -51,5 +54,3 @@ function is_valid_domain_name($domain_name)
             && preg_match("/^.{1,253}$/", $domain_name) //overall length check
             && preg_match("/^[^\.]{1,63}(\.[^\.]{1,63})*$/", $domain_name)   ); //length of each label
 }
-
-?>
