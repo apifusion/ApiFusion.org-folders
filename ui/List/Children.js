@@ -6,17 +6,25 @@ define(['jquery'],function ( $ )
 {   "use strict";
     return function AfListChildren( node, params )
     {
-        var $w  = $(node)
+        var skip = []
+        ,   $w  = $(node)
         ,   wp  = mw.config.get('wgArticlePath')
         ,   cp  = mw.config.get('wgTitle')
         ,   pg  = ( "string" == typeof params ? params : params.page || cp )
         ,   url = mw.config.get('wgScriptPath')+'/../ApiFusion.org-folders/php/Pages.php?title='+ pg;
 
+        if( "object" == typeof params && params.skip )
+        {   skip = params.skip;
+            if( "string"== typeof skip )
+                skip = params.skip.split(',');
+        }
+
         $.get( url, function( data )
         {   data.children.forEach( function( c )
-            {   var t = c.page_title.split('/').pop();
-                var u = pg + '/' + t;
-                $w.append('<a href="'+wp.replace('$1',u)+'">'+t+'</a> ');
+            {   var t = c.page_title.split('/').pop()
+                ,   u = pg + '/' + t;
+                if( !skip.includes(t) )
+                    $w.append('<a href="'+wp.replace('$1',u)+'">'+t+'</a> ');
             });
         }).fail( function(err){  console.error( "error",err, url );  })
     };
