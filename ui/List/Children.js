@@ -4,6 +4,7 @@
  */
 define(['jquery'],function ( $ )
 {   "use strict";
+    $('<style>.af-ui-list-children a { background-color: rgba(0,128,0,.1); }</style>').appendTo('head');
     return function AfListChildren( node, params )
     {
         var skip = []
@@ -24,7 +25,7 @@ define(['jquery'],function ( $ )
             {   var t = c.page_title.split('/').pop()
                 ,   u = pg + '/' + t;
                 if( !skip.includes(t) )
-                    $w.append('<a href="'+wp.replace('$1',u)+'">'+t+'</a> ');
+                    $w.append('<a class="btn" href="'+wp.replace('$1',u)+'">'+t+'</a> ');
             });
         }).fail( function(err){  console.error( "error",err, url );  })
     };

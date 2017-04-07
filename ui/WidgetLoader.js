@@ -10,13 +10,14 @@ define(["jquery", "require"],function ( $, require )
     function WidgetLoader()
     {
         $("*[data-af-mid]").each( function InitWidget( i, el )
-        {      var mid = el.getAttribute("data-af-mid");
-                require([mid], function CreateWidget( Widget )
-                {   try
-                    {   new Widget( el, JSON.parse( el.getAttribute("data-af-param") ) );
-                    }catch( ex )
-                        { console.error( mid, ex); debugger; }
-                });
+        {   var mid = el.getAttribute("data-af-mid");
+            $(el).addClass( mid.toLowerCase().replace( /\//g, "-") );
+            require([mid], function CreateWidget( Widget )
+            {   try
+                {   new Widget( el, JSON.parse( el.getAttribute("data-af-param") ) );
+                }catch( ex )
+                    { console.error( mid, ex); debugger; }
+            });
         });
     }
 });
