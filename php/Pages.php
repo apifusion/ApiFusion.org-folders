@@ -37,7 +37,7 @@ $pageTable = $dbr->tableName( "page" );
 			: " page_title LIKE '$t/%' and page_title NOT LIKE '$t/%/%' ";
 		$cldCount = ", (SELECT COUNT( * ) FROM (SELECT page_title FROM " . $pageTable ." GROUP BY page_title)p2 WHERE p2.page_title LIKE CONCAT( p1.page_title,  '/%' ) AND p2.page_title NOT LIKE CONCAT( p1.page_title,  '/%/%' ))childrenCount";
 
-		echo '{ "nsCount":'. $row1->nsCount.',"page_title":"'. $t .'","parent":"$parentTitle",children:[ ';	
+		echo '{ "nsCount":'. $row1->nsCount.',"page_title":"'. $t .'","parent":"'.$parentTitle.'","children":[ ';	
 		$sql = "select p1.page_title, count(p1.page_namespace) as nsCount $cldCount from " . $pageTable ." p1 where $cldSql and (p1.page_namespace > 1000 or p1.page_namespace=0) GROUP BY page_title";
 //echo $sql.'<br/>';
 		$res2 = $dbr->query($sql);
