@@ -7,6 +7,8 @@
 $afNsBitMask = [];
 $afNsCat = [];
 
+/*
+
 define("NS_FOO", 500);
 define("NS_FOO_TALK", 501);
  
@@ -16,7 +18,6 @@ $wgExtraNamespaces[NS_FOO_TALK] = "Foo_talk";   // underscore required
 $wgNamespaceProtection[NS_FOO] = array( 'editfoo' ); //permission "editfoo" required to edit the foo namespace
 $wgNamespacesWithSubpages[NS_FOO] = true;            //subpages enabled for the foo namespace
 $wgGroupPermissions['sysop']['editfoo'] = true;      //permission "editfoo" granted to users in the "sysop" group
-
 # disable editing of all pages, then re-enable for users with confirmed e-mail addresses only
 # Disable for everyone.
 $wgGroupPermissions['*']['edit']              = false;
@@ -28,7 +29,7 @@ $wgAutopromote['emailconfirmed'] = APCOND_EMAILCONFIRMED;
 $wgImplicitGroups[] = 'emailconfirmed';
 # Finally, set it to true for the desired group.
 # $wgGroupPermissions['emailconfirmed']['edit'] = true;
-
+*/
 AF_NSInitFromXml();
 /* comment line above and uncomment bellow to generate namespaces out of this list
 $NS_ApiFusionNames = array
@@ -73,9 +74,9 @@ function NS_ApiFusionInitNS( $id, $name )
 	global $wgExtraNamespaces,  $wgNamespaceProtection,  $wgNamespacesWithSubpages, $wgGroupPermissions;
 	$name = str_replace(' ','_',$name);
 	$wgExtraNamespaces[$id] = $name; 
-	$wgNamespaceProtection		[$id] = array( 'edit'+$name ); //permission "editfoo" required to edit the foo namespace
-	$wgNamespacesWithSubpages	[$id] = true;            //subpages enabled for the foo namespace
-	$wgGroupPermissions['sysop']['edit'+$name] = true;      //permission "editfoo" granted to users in the "sysop" group
+	$wgNamespaceProtection		[$id] = array( 'edit'.$name );  //permission "editfoo" required to edit the foo namespace
+	$wgNamespacesWithSubpages	[$id] = true;                   //subpages enabled for the foo namespace
+	$wgGroupPermissions['sysop']['edit'.$name] = true;          //permission "editfoo" granted to users in the "sysop" group
 //	print($id . " " . $name . ' ' . $wgExtraNamespaces[$id] . "\n<br/>");	
 }
 
@@ -86,7 +87,8 @@ function AF_NSInitFromXml()
     $xmlObj = simplexml_load_file( __DIR__ . "/Namespaces.xml" );
     foreach( $xmlObj->query->namespaces->ns as $nsEntry )
     {
-    	$attr = $nsEntry->attributes();
+        /** @var SimpleXMLElement $nsEntry */
+        $attr = $nsEntry->attributes();
     	$id = $attr['id'];
         $name = ''.$attr['canonical'];
         $cat  = ''.$attr['category'];
