@@ -1,6 +1,8 @@
 /**
  * Created by suns on 2017-04-02.
  * http://www.ApiFusion.org/wiki/index.php/ApiFusion.org/Sources/ui/List/Children.js
+ * http://www.ApiFusion.org/wiki/index.php/Template:ChildrenList&action=edit
+ * <span data-af-mid="af/ui/List/Children" data-af-param='{ "page":"{{{page|}}}" , "skip": [ "{{{skip|}}}"] }'></span>
  */
 define(['jquery'],function ( $ )
 {   "use strict";

@@ -1,6 +1,8 @@
 /**
  * Created by suns on 2017-04-04.
  * http://www.ApiFusion.org/wiki/index.php/ApiFusion.org/Sources/ui/List/Siblings/Namespace.js
+ * http://www.ApiFusion.org/wiki/index.php/Template:SiblingsNS&action=edit
+ * <span data-af-mid="af/ui/List/Siblings/Namespace" data-af-param='{ "page":"{{{page|}}}" , "skip": [ "{{{skip|}}}"] }'></span>
  */
 define(['jquery'    , "dojo/request",	"dojo/promise/all",	"dojo/_base/array"
 ],function ( $      , request		,	all               ,	array             )
