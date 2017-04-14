@@ -3,7 +3,7 @@
 
 error_reporting(-1);
 ini_set('display_errors', 'On');
-$wikiFolder = isset($_SERVER["HTTP_REFERER"]) ? explode('/', $_SERVER["HTTP_REFERER"] )[4] : "wiki";
+$wikiFolder = "wiki";//isset($_SERVER["HTTP_REFERER"]) ? explode('/', $_SERVER["HTTP_REFERER"] )[4] : "wiki";
 
 putenv( 'MW_INSTALL_PATH='. realpath( dirname( __FILE__ ) . '/../../'.$wikiFolder) );
 require realpath( dirname( __FILE__ ) . '/../../'.$wikiFolder.'/includes/WebStart.php' );
