@@ -1,6 +1,7 @@
 <?php
 # get list of subpages beginning from current and up to root
 
+// ToDo filter results by ACL_rule
 error_reporting(-1);
 ini_set('display_errors', 'On');
 $wikiFolder = "wiki";//isset($_SERVER["HTTP_REFERER"]) ? explode('/', $_SERVER["HTTP_REFERER"] )[4] : "wiki";

@@ -59,7 +59,7 @@ createPagesTree(cssSelector, getRoot, curPath)
 	,	_onClick: function(nodeWidget, e)
 			{
 				if( e.target.nodeName.toLowerCase() == "a" )
-					return false;
+                    return window.location.href = e.target.href;
 				return this.__click(nodeWidget, e, this.openOnClick, 'onClick');
 			}
 	,	_createTreeNode: function(args)
