@@ -1,6 +1,6 @@
 /**
  * Created by suns on 2017-04-02.
- * WidgetLoader() creates a widgets for all dom nodea with data-af-mid attribute.
+ * WidgetLoader() creates a widgets for all dom nodes with data-af-mid attribute.
  */
 define(["jquery", "require"],function ( $, require )
 {   "use strict";

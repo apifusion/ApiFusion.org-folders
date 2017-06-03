@@ -107,7 +107,7 @@ $("#form1 button").click(function ()
 {   $('#from-url s').hide();
     $.get( $('#from-url input').val() +"/index.php?title=Special:AllPages" ).done(function(data)
     {
-        var $pg = $(data)
+        var $pg =  $(data.substring(data.indexOf('<div')))
         ,   $ns = $('select')
         ,   nsIDs = [];
 
@@ -238,11 +238,11 @@ ListPages()
         if( ( op.value && op.selected ) || $s[0].selected )
         {   op.className = "processing"; 
             $.get( $('#from-url input').val() +"/index.php?title=Special:AllPages&namespace=" + op.value ).done(function(data)
-            {   var $pg = $(data)
+            {   var $pg = $(data.substring(data.indexOf('<div')))
                 ,   pages = $('#form2 textarea')[0]
                 ,   nsPages = 0;
 
-                $pg.find('.mw-allpages-table-chunk a').each( function( i, a ){ nsPages++; pages.value += a.title + '\n'; });
+                $pg.find('.mw-allpages-body a').each( function( i, a ){ nsPages++; pages.value += a.title + '\n'; });
                 op.className = "processed";
                 op.innerHTML = op.title + ' ('+nsPages+')';
                 var $v = $('#form3 .total').html('0')

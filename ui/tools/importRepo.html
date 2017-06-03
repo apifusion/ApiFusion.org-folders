@@ -1,0 +1,74 @@
+<!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Import from version control - ApiFusion </title>
+</head>
+<body>
+<fieldset>
+    <legend>1. Pick repository</legend>
+    <table>
+        <tr title="The Sources folder in project where all repositories will be listed">
+            <th>AF root  in Sources     </th><td><input name="af-sources-root"     /></td>
+        </tr>
+        <tr title="AF folder to import including root above, optional">
+            <th>AF folder to import  </th><td><input name="af-sources-folder"   /></td>
+        </tr>
+        <tr title="version control URL, required">
+            <th>repo        </th><td><input name="vc-repo"     /></td>
+        </tr>
+        <tr title="User name for Version control, optional if anonymous access permitted">
+            <th>user        </th><td><input name="vc-user"     /></td>
+        </tr>
+        <tr>
+            <th>password    </th><td><input name="vc-password" /></td>
+        </tr>
+        <tr>
+            <th> <input type="submit" value="next" /></th><td></td>
+        </tr>
+    </table>
+
+</fieldset>
+<fieldset>
+    <legend>2. Folders to sync up</legend>
+    <table>
+        <tr>
+            <th>VC branch   </th><td><input name="vc-branch"     /></td><td>git fetch && git branch -r </td>
+        </tr>
+        <tr>
+            <th>VC folders  </th><td><textarea name="vc-folders" ></textarea></td><td>git ls-tree -r master --name-only</td>
+        </tr>
+        <tr>
+            <th><input type="submit" value="next" /></th><td></td><td></td>
+        </tr>
+    </table>
+</fieldset>
+<fieldset>
+    <legend>3. Sync results </legend>
+    <table>
+        <tr>
+            <th>url</th><th>type</th><th>is modified</th>
+        </tr>
+        <tr>
+            <td><a href="importRepo.html">importRepo.html</a></td><td>folder/file/class/method/member</td><td>&checkmark;</td>
+        </tr>
+    </table>
+</fieldset>
+<style>
+    table{ width: 100%; }
+    tr>*:nth-child(1){ text-align: right;}
+    tr>*:nth-child(2){ width: 80%;}
+    tr>*:nth-child(2)>*{ width: 100%;}
+    fieldset:nth-child(3) tr>*{ width: auto;text-align: left}
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.xml4jquery.com/ajax/libs/xml4jquery/1.1.1/xml4jquery.js"></script>
+<script>
+    // http://localhost/af/ApiFusion.org-folders/php/Pages.php?title=ApiFusion.org/Sources
+    let urlParams={}; location.search.substring(1).split('&').forEach( el=>{ let a=el.split('=',2); window.urlParams[a[0]]=a[1]});
+    function input( name ){ return $(`input[name=${name}]`); }
+</script>
+</body>
+</html>
