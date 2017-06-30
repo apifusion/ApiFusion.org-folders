@@ -77,8 +77,8 @@
         </table>
     </form>
 </fieldset>
-<fieldset class="step3">
-    <legend>3. Sync results </legend>
+<fieldset class="step4">
+    <legend>4. Sync results </legend>
     <table>
 
         <tr>
@@ -99,7 +99,7 @@
     input.validated { background-color: #ADA;}
     dl{ display: none; position: relative; top: -1px; margin: 0; }
     dd{ padding: 0.2em; display: block;margin: 0; position: absolute;background: #EEE;}
-    dd a{display: block;}
+    dd a{display: block; padding: 0.2em; }
     dd a:hover{background-color: palegreen;}
     td:hover dl,td:focus dl, input:focus~dl { display: block;  }
 </style>
@@ -122,17 +122,19 @@
     validateUrl('af-git-restful', '/git-restful', '//app.version').$then( u =>  gitRestfulUrl = input('af-git-restful').val(), ()=> gitRestfulUrl ="" );
     validateUrl('af-wiki-root'  , ''            , '//app.version').$then( u =>  wikiUrl       = u                            , ()=> wikiUrl       ="" );
 
-    $( '.step0 form').submit( ev=>
-    {   ev.preventDefault();
+    input('vc-repo').$on('input change').val().$then(onRepoChange);
+
+    $onSubmit( 0,  ()=>
+    {
         if( !gitRestfulUrl || !wikiUrl )
             return;
         enableStep( 1 );
         $.get( pagesUrl(), x=> orgs = x.children.map( e=>e.page_title ) );
         input('af-sources-root').$on('change input focus').val().$then( onSourcesRootChange );
     });
-    input('vc-repo').$on('input change').val().$then(onRepoChange);
-    $( '.step1 form').submit( ev=>
-    {   ev.preventDefault();
+
+    $onSubmit( 1, ()=>
+    {
         let repo = input('vc-repo').val();
         if( !repo )
             return;
@@ -152,9 +154,8 @@
         });
     });
 
-    $( '.step2 form').submit( ev=>
+    $onSubmit( 2, ()=>
     {
-        ev.preventDefault();
         let branch = input('vc-branch').val();
         $.get( `${gitRestfulUrl}/lock-branch/${lockedRepo}/${branch}`, a=>
         {
@@ -162,6 +163,28 @@
             enableStep( 3 );
         });
     });
+
+    $onSubmit( 3, ()=>
+    {
+        enableStep( 4 );
+        processFolder( '' );
+
+        function processFolder( folder )
+        {
+            console.log( 'processFolder', JSON.stringify( folder ) );
+            $.get( `${gitRestfulUrl}/list/${lockedRepo}/${folder}`, a=>
+            {
+                for( let r of a )
+                    processFolder( `${folder}/${r.name}` )
+            });
+        }
+    });
+
+        function
+    $onSubmit( step, cb )
+    {
+        return $( `.step${step} form` ).on('submit', ev=>{ ev.preventDefault(); cb() });
+    }
         function
     disable( css )
     {
