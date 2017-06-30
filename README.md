@@ -1,4 +1,5 @@
 ApiFusion.org-folders
 =====================
 
-common root for web site on sources level
+ApiFusion wiki add-on files. Should be sibling to wiki/ folder.
+See ui/Setup.html for wiki setup instructions.

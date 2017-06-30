@@ -3,9 +3,11 @@
 
 error_reporting(-1);
 ini_set('display_errors', 'On');
-putenv( 'MW_INSTALL_PATH='. realpath( dirname( __FILE__ ) . '/../wiki') );
+$wikiFolder = "wiki";//isset($_SERVER["HTTP_REFERER"]) ? explode('/', $_SERVER["HTTP_REFERER"] )[4] : "wiki";
+
+putenv( 'MW_INSTALL_PATH='. realpath( dirname( __FILE__ ) . '/../../'.$wikiFolder) );
 header('Content-Type: application/json');
-require realpath( dirname( __FILE__ ) . '/../wiki/includes/WebStart.php' );
+require realpath( dirname( __FILE__ ) . '/../../'.$wikiFolder.'/includes/WebStart.php' );
 
 
 $fullTitle = str_replace ( ' ' , '_', $_REQUEST['title'] );
@@ -22,10 +24,9 @@ if( $arr && count($arr) > 1 )
 $dbr = wfGetDB( DB_MASTER );
 
 	$nsArr = array();
-	$res = $dbr->query("select page_namespace as ns from wiki_page where page_title='$title' ");
+	$res = $dbr->query("select page_namespace as ns from " . $wgDBprefix ."page where page_title='$title' ");
 	foreach( $res as $row1 )
 	       array_push($nsArr, $row1->ns);	
 echo '[';
 	echo implode(',',$nsArr);
 echo ']';
-?>

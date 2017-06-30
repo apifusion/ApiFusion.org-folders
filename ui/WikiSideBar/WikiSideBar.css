@@ -1,7 +1,8 @@
+@import "../af-theme.css";
 #p-Organisations>div,
 #p-Projects>div,
 #p-Pages>div,
-#p-Namespaces>div{ display: block; margin: 0px !important;}
+#p-Namespaces>div{ display: block; margin: 0 !important;}
 #p-Namespaces .nsFound {color:green;font-weight:bold;}
 .claro .dijitTreeNode 
 {
@@ -17,5 +18,3 @@
 .expanded:hover .dijitTree{ overflow: visible; }
 
 .Page_Select_Control input[name=title]{width:100%;}
-.NSSiblings .new, .NSSiblings .selflink {display:none;}
-.NSSiblings a {background-color: rgba(0,0,128,.1);border-radius: 4px;padding: 0.4em;}

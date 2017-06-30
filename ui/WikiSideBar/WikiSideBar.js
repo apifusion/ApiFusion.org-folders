@@ -1,23 +1,18 @@
-define([ "dojo/query"	, "dojo/request",	"dojo/promise/all"	,	"dojo/_base/array"	,"dojo/store/Memory"	,"dojo/store/JsonRest"	,"dijit/tree/ObjectStoreModel"	, "dijit/Tree"	, "dijit/form/CheckBox"	,"dijit/tree/dndSource"	, "dojo/ready", "dojo/NodeList-manipulate" ]
-, function( $			, request		,	all					,	array				, Memory				, JsonRest				,ObjectStoreModel				, Tree			, CheckBox				, dndSource				, ready )
+require([ "dojo/query"	, "dojo/request",	"dojo/promise/all"	,	"dojo/_base/array"	,"dojo/store/Memory"	,"dojo/store/JsonRest"	,"dijit/tree/ObjectStoreModel"	, "dijit/Tree"	, "dijit/form/CheckBox"	,"dijit/tree/dndSource"	,"dojo/topic"   ,"dojo/ready", "dojo/NodeList-manipulate" ]
+, function( $			, request		,	all					,	array				, Memory				, JsonRest				,ObjectStoreModel				, Tree			, CheckBox				, dndSource				,topic          , ready )
 {
 
 //	if( typeof mw == 'undefined' )
 //		var mw;
 	var DEFNS = 'Default'
 	,	curNS	= (mw && mw.config.get( 'wgCanonicalNamespace' )) || DEFNS
-	,	afRoot	= (mw && mw.config.get( 'wgScriptPath' ) || '.')+"/../"
+	,	afRoot	= require.toUrl('af')+'/'
 	,	pageTitle	= (mw && mw.config.get( 'wgTitle' ) ) || ''
 	,	pages		= pageTitle.split('/');
 
 	ready( function()
 	{
-		var css=document.createElement("link");
-		css.setAttribute("rel", "stylesheet");
-		css.setAttribute("type", "text/css");
-		css.setAttribute("href", "https://ajax.googleapis.com/ajax/libs/dojo/1.10.1/dijit/themes/claro/claro.css");
-		document.getElementsByTagName("head")[0].appendChild(css)
-  		document.body.className += " claro";
+		document.body.className += " claro";
 
 		all([ request( afRoot+"ns/Namespaces.xml"				, { handleAs:"xml"	} )
 			, request( afRoot+"php/PageNS.php?title="+pageTitle	, { handleAs:"json"	} ) 
@@ -29,6 +24,8 @@ define([ "dojo/query"	, "dojo/request",	"dojo/promise/all"	,	"dojo/_base/array"	
 		createPagesTree("#p-Pages div ul"			,getRoot( getPageId(1)	), pathToCurrent(1, pages) );
 
 		$(".Page_Select_Control").forEach( init_Page_Select_Control );
+		var mid = afAction2mid[ mw.config.get( 'wgAction' ) ];
+		mid && require([ mid ]);
     });
 	return {};
 
@@ -62,7 +59,7 @@ createPagesTree(cssSelector, getRoot, curPath)
 	,	_onClick: function(nodeWidget, e)
 			{
 				if( e.target.nodeName.toLowerCase() == "a" )
-					return false;
+                    return window.location.href = e.target.href;
 				return this.__click(nodeWidget, e, this.openOnClick, 'onClick');
 			}
 	,	_createTreeNode: function(args)
@@ -72,6 +69,9 @@ createPagesTree(cssSelector, getRoot, curPath)
 				,	zs	= this
 				,	name= o.page_title.split('/').pop();
 				ret.labelNode.innerHTML = '<a href="'+getLinkPage(o)+'">'+name+'</a>';
+                if( 'view'!= mw.config.get('wgAction') )
+                    new CheckBox({	onChange: function(b){	ret.item.selected = b; topic.publish("title/checked",ret.item); }})
+                    .placeAt( ret.labelNode, "first");
 				return ret;
 			}
     }, $(cssSelector)[0]);
@@ -184,13 +184,9 @@ createTree( cssSelector, myModel, curPath, getLink, nsArr )
 					if( b ) 
 						ret.labelNode.className += " nsFound ";
 				}
-				var cb = new CheckBox(
-				{	onChange: function(b)
-					{	ret.item.selected = b;
-						console.log( ret.item, b );
-					}
-				});
-				cb.placeAt( ret.labelNode, "first");
+				if( 'view'!= mw.config.get('wgAction') )
+                    new CheckBox({	onChange: function(b){	ret.item.selected = b; topic.publish("namespace/checked",ret.item); }})
+                    .placeAt( ret.labelNode, "first");
 
 				return ret;
 			}
