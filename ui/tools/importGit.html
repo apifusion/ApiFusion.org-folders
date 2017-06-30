@@ -168,14 +168,17 @@
     {
         enableStep( 4 );
         processFolder( '' );
-
+        const af = input('af-sources-root').val();
         function processFolder( folder )
         {
             console.log( 'processFolder', JSON.stringify( folder ) );
             $.get( `${gitRestfulUrl}/list?repo=${lockedRepo}&folder=${folder}`, a=>
             {
                 for( let r of a )
-                    r.isDirectory && processFolder( `${folder}/${r.name}` )
+                {   const f = `${folder}/${r.name}`;
+                    $('.step4 table').append(`<tr><td><a href="${wikiUrl}/index.php/${af}${f}">${f}</a></td><td>.</td><td>&checkmark;</td></tr>`);
+                    r.isDirectory && processFolder( `${folder}/${r.name}` );
+                }
             });
         }
     });
@@ -267,7 +270,7 @@
     {   const $i = input( filedName );
         urlParams[filedName] && $i.val( urlParams[filedName] );
         const $ret = $i.$on( 'change input').val().$then( v => v+path ).xml( '$0' ).addClass('validated')
-                                .$then( ( v, x, u )=>  u , function(err){ $(this).removeClass('validated').addClass('error'); console.error(err); throw err } );
+                       .$then( ( v, x, u )=>  u , function(err){ $(this).removeClass('validated').addClass('error'); console.error(err); throw err } );
         $i.sleep(10).trigger('change');
         return $ret;
     }
