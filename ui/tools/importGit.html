@@ -172,10 +172,10 @@
         function processFolder( folder )
         {
             console.log( 'processFolder', JSON.stringify( folder ) );
-            $.get( `${gitRestfulUrl}/list/${lockedRepo}/${folder}`, a=>
+            $.get( `${gitRestfulUrl}/list?repo=${lockedRepo}&folder=${folder}`, a=>
             {
                 for( let r of a )
-                    processFolder( `${folder}/${r.name}` )
+                    r.isDirectory && processFolder( `${folder}/${r.name}` )
             });
         }
     });
