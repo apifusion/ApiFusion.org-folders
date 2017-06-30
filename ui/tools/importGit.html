@@ -28,45 +28,59 @@
 </fieldset>
 <fieldset class="step1">
     <legend>1. Pick repository</legend>
-    <table>
-        <tr title="The Sources folder in project where all repositories will be listed">
-            <th>Proj Sources folder
-                <sub>org/proj/Sources</sub>     </th><td><input name="af-sources-root"     /><dl><dd></dd></dl></td>
-        </tr>
-        <!--<tr title="AF folder to import including root above, optional">-->
-            <!--<th>AF folder to import  </th><td><input name="af-sources-folder"   /></td>-->
-        <!--</tr>-->
-        <tr title="version control URL, required">
-            <th>git repo url        </th><td><input name="vc-repo"     /></td>
-        </tr>
-        <!--<tr title="User name for Version control, optional if anonymous access permitted">-->
-            <!--<th>user        </th><td><input name="vc-user"     /></td>-->
-        <!--</tr>-->
-        <!--<tr><th>password    </th><td><input name="vc-password" /></td>-->
-        <!--</tr>-->
-        <tr>
-            <th> <input type="submit" value="next" /></th><td></td>
-        </tr>
-    </table>
-
+    <form>
+        <table>
+            <tr title="version control URL, required">
+                <th>git repo url        </th><td><input name="vc-repo"     /></td>
+            </tr>
+            <!--<tr title="User name for Version control, optional if anonymous access permitted">-->
+                <!--<th>user        </th><td><input name="vc-user"     /></td>-->
+            <!--</tr>-->
+            <!--<tr><th>password    </th><td><input name="vc-password" /></td>-->
+            <!--</tr>-->
+            <tr>
+                <th> <input type="submit" value="next" /></th><td></td>
+            </tr>
+        </table>
+    </form>
 </fieldset>
 <fieldset class="step2">
-    <legend>2. Folders to sync up</legend>
-    <table>
-        <tr>
-            <th>VC branch   </th><td><input name="vc-branch"     /></td><td>git fetch && git branch -r </td>
-        </tr>
-        <tr>
-            <th>VC folders  </th><td><textarea name="vc-folders" ></textarea></td><td>git ls-tree -r master --name-only</td>
-        </tr>
-        <tr>
-            <th><input type="submit" value="next" /></th><td></td><td></td>
-        </tr>
-    </table>
+    <legend>2. Branch and folders to sync up</legend>
+    <form>
+        <table>
+            <tr>
+                <th>VC branch   </th><td><input name="vc-branch"     /><dl><dd></dd></dl></td><td>git fetch && git branch -r </td>
+            </tr>
+            <!--<tr>-->
+                <!--<th>VC folders  </th><td><textarea name="vc-folders" ></textarea></td><td>git ls-tree -r master &#45;&#45;name-only</td>-->
+            <!--</tr>-->
+            <tr>
+                <th><input type="submit" value="next" /></th><td></td><td></td>
+            </tr>
+        </table>
+    </form>
+</fieldset>
+<fieldset class="step3">
+    <legend>3. Destination </legend>
+    <form>
+        <table>
+            <tr title="The Sources folder in project where all repositories will be listed">
+                <th>Proj Sources folder
+                    <sub>org/proj/Sources</sub>     </th><td><input name="af-sources-root"     /><dl><dd></dd></dl></td>
+            </tr>
+            <tr title="Repository folder to import including root above, optional">
+                <th>Repo folder to import  </th><td><input name="af-sources-folder" placeholder="todo"  /></td>
+            </tr>
+            <tr>
+                <th><input type="submit" value="next" /></th><td></td><td></td>
+            </tr>
+        </table>
+    </form>
 </fieldset>
 <fieldset class="step3">
     <legend>3. Sync results </legend>
     <table>
+
         <tr>
             <th>url</th><th>type</th><th>is modified</th>
         </tr>
@@ -97,14 +111,16 @@
     let gitRestfulUrl
     ,   wikiUrl
     ,   sourcesRoot
-    ,   orgs=[];
+    ,   orgs=[]
+    ,   lockedRepo
+    ,   lockedBranch;
 
     const SEARCH_URL = "/api.php?action=opensearch&format=xml&namespace=0&limit=1000&suggest=true&search=";
 
     enableStep( 0 );
 
-    validateUrl('af-git-restful', '/git-restful', '//app.version').$then( u =>  gitRestfulUrl = u, ()=> gitRestfulUrl ="" );
-    validateUrl('af-wiki-root'  , ''            , '//app.version').$then( u =>  wikiUrl       = u, ()=> wikiUrl       ="" );
+    validateUrl('af-git-restful', '/git-restful', '//app.version').$then( u =>  gitRestfulUrl = input('af-git-restful').val(), ()=> gitRestfulUrl ="" );
+    validateUrl('af-wiki-root'  , ''            , '//app.version').$then( u =>  wikiUrl       = u                            , ()=> wikiUrl       ="" );
 
     $( '.step0 form').submit( ev=>
     {   ev.preventDefault();
@@ -118,18 +134,39 @@
     $( '.step1 form').submit( ev=>
     {   ev.preventDefault();
         let repo = input('vc-repo').val();
-        if( !sourcesRoot || !repo )
+        if( !repo )
             return;
-        $.Xml(gitRestfulUrl+"/lock-repo?url="+repo ).$then( x=>
-        {
+        disable( '.step1 form input[type=submit]' );
+        $.get( `${gitRestfulUrl}/lock-repo?url=${repo}`, x=>
+        {   lockedRepo = x;
             enableStep( 2 );
+            let $b = input('vc-branch').focus();
+            $.get( `${gitRestfulUrl}/list/${x}/branches`, a=>
+            {
+                $('.step2 dd').html( a.map( b=>`<a href="#">${b}</a>`).join('') )
+                    .find('a').click( ev=>
+                    {   ev.preventDefault();
+                        $b.val( ev.target.innerHTML )
+                    });
+            });
         });
     });
 
-
-
-
-
+    $( '.step2 form').submit( ev=>
+    {
+        ev.preventDefault();
+        let branch = input('vc-branch').val();
+        $.get( `${gitRestfulUrl}/lock-branch/${lockedRepo}/${branch}`, a=>
+        {
+            lockedBranch = branch;
+            enableStep( 3 );
+        });
+    });
+        function
+    disable( css )
+    {
+        $(css).prop( "disabled", true );
+    }
         function
     onRepoChange( v )
     {   if( !v )
@@ -143,17 +180,28 @@
         $.get( pagesUrl( org ), x=>
         {
             for( let k of x.children )
-                if( k.page_title === 'Sources')
-                {   // todo traverse over Sources/*
-
-                }else if( k.page_title.toLowerCase().indexOf(proj.toLowerCase() ) ===0 )
-                {   proj = k.page_title;
-                    return setRoot(); // todo test this case
-                }
-            proj=x.children[0].page_title.replace(org+'/','');setRoot()
+                if( k.page_title.includes('/Sources') )
+                    return $.get( pagesUrl( k.page_title ), x=> // traverse over Sources/*
+                    {
+                        for( let p of x.children )
+                            if( hasProj( k ) )
+                                return setRoot(  p.page_title );
+                        setRoot(k.page_title + '/'+ proj )
+                    });
+            findProj( x );
         }).fail( setRoot );
 
-        function setRoot(){   input('af-sources-root').val(`${org}/${proj}/Sources`); }
+            function
+        hasProj( k ){ return k.page_title.split('/')[1].toLowerCase().indexOf(proj.toLowerCase() ) ===0 }
+            function
+        findProj( x )
+        {
+            for( let k of x.children )
+                if( hasProj( k ) )
+                    return setRoot( k.page_title+'/Sources' ); // todo test this case
+        }
+            function
+        setRoot( proj ){   input('af-sources-root').val(`${proj}`); }
     }
         function
     enableStep( s )
