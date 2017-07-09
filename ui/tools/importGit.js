@@ -1,3 +1,4 @@
+// http://localhost/af/ApiFusion.org-folders/ui/tools/importGit.html
 // http://localhost/af/ApiFusion.org-folders/php/Pages.php?title=ApiFusion.org/Sources
 const urlParams={}; location.search.substring(1).split('&').filter(a=>!!a).forEach( el=>{ let a=el.split('=',2); urlParams[a[0]]=decodeURIComponent(a[1])});
 let gitRestfulUrl
@@ -6,7 +7,10 @@ let gitRestfulUrl
 ,   orgs=[]
 ,   lockedRepo
 ,   lockedBranch
-,   afSourcesRoot;
+,   afSourcesRoot
+,   wikiEditToken
+,   creationQueue = []
+,   pagesCreated = 0;
 
 const SEARCH_URL = "/api.php?action=opensearch&format=xml&namespace=0&limit=1000&suggest=true&search=";
 const t2a = {}; // title 2 FolderEntry attributes
@@ -62,9 +66,26 @@ $onSubmit( 3, ()=>
 {
     afSourcesRoot = input('af-sources-root').val();
 //    enableStep( 4 );
+    setInterval( poolCreationQueue, 100 );
     processFolder( '' );
     //const af = input('af-sources-root').val();
 });
+    function
+poolCreationQueue()
+{
+    const r = creationQueue.shift();
+    if( !r )
+        return;
+    $('input[name=pages-created]').val( ++pagesCreated );
+    $('input[name=pages-to-create]').val( creationQueue.length );
+    const text = JSON.stringify(r);
+    // tags
+    $.post( `${wikiUrl}/api.php`
+        ,`action=edit&summary=created&createonly=true&watchlist=watch&format=xml&token=${wikiEditToken}&titles=${r.title}&text=${text}`
+        , x => console.log(x) );
+
+
+}
     function
 processFolder( folder )
 {
@@ -99,15 +120,32 @@ processPages( pages )
     function
 renderPage( r )
 {
-    let status = { missing:'&times;', created:'*', existing:'&checkmark;'}[r.status];
-    return $('.step4 table').append(`<tr><td><a href="${wikiUrl}/index.php/${r.title}">${r.title}</a></td><td>${status}</td><td>${status}</td></tr>`)
+    let status = { missing:'&times;', created:'*', existing:'&checkmark;', error:'!'}[r.status];
+    return $('.step4 table').append(`<tr title="${r.title}"><td><a href="${wikiUrl}/index.php/${r.title}">${r.title}</a></td><td>${status}</td><td>${status}</td></tr>`)
         .$then( x=>r );
 }
     function
 createPage( r )
 {
-    r.status=='created';
-    return renderPage( r );
+    $('input[name=pages-to-create]').val( creationQueue.push(r) );
+    let text = encodeURIComponent( JSON.stringify(r) );
+    return $.Xml( `${wikiUrl}/api.php?action=query&meta=tokens&type=csrf&format=xml&titles=${r.title}`)
+    .XPath( '//tokens' )
+    .$then( x=> $(x).attr('csrftoken') )
+    .$then( wikiEditToken => "+\\" === wikiEditToken &&  throwErr('wikiEditToken required') )
+    .$then( ( x, wikiEditToken ) => $.post( `${wikiUrl}/api.php`, `action=edit&summary=created&createonly=true&watchlist=watch&format=xml&token=${encodeURIComponent(wikiEditToken)}&title=${encodeURIComponent(r.title)}&text=${text}` ) )
+    .xPath( '//error|//edit' )
+    .$then( e =>
+            {   const c = $(e).attr('code');
+                if( 'articleexists' === c )
+                   return r.status = 'existing';
+
+                if( 'Success' === $(e).attr('result') ) // <edit new="" result="Success"
+                    return r.status = 'created';
+                throw $(e).attr('info');
+            })
+    .$then( x=> console.log('success', x ), err => console.error( r.info = err ), r.status = 'error' )
+    .$then( x=> renderPage( r ) );
 }
     function
 $onSubmit( step, cb )
