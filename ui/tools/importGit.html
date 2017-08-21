@@ -13,11 +13,15 @@
     <legend>0. Connect to Wiki and git-restful</legend>
     <form >
         <table>
-            <tr title="git-restful server URL">
+            <tr title="git-restful server URL
+                        http://localhost:8080
+                    ">
                 <th><a href="https://www.apifusion.com/wiki/index.php/ApiFusion.org/Sources/git-restful">git-restful</a> root    </th>
                 <td><input name="af-git-restful"  value="http://localhost:8080"   /></td>
             </tr>
-            <tr title="wiki root URL">
+            <tr title="wiki root URL
+                        /wiki
+                    ">
                 <th>AF wiki root URL  </th><td><input name="af-wiki-root"  value="/af/wiki" /></td>
             </tr>
             <tr>
@@ -32,6 +36,18 @@
         <table>
             <tr title="version control URL, required">
                 <th>git repo url        </th><td><input name="vc-repo"  value="https://github.com/apifusion/ApiFusion.org-folders.git"   /></td>
+            </tr>
+            <tr title="version control URL, sample">
+                <th>sample        </th><td>https://github.com/apifusion/ApiFusion.org-folders.git</td>
+            </tr>
+            <tr title="URL mask where the sources could be viewed, required">
+                <th> path to view sources <button class="regenerate">&#8635;</button></th><td><input name="vc-repo-view"  value="https://github.com/apifusion/${lockedRepo}/blob/${lockedBranch}/${sourcePath}"   />             </td>
+            </tr>
+            <tr title="URL mask where the sources could be viewed, sample">
+                <th> sample</th><td>
+                    https://github.com/${org}/${lockedRepo}/blob/${lockedBranch}/${sourcePath}<br/>
+                    https://bitbucket.org/${org}/${lockedRepo}/src/${lockedBranch}/${sourcePath}
+                </td>
             </tr>
             <!--<tr title="User name for Version control, optional if anonymous access permitted">-->
                 <!--<th>user        </th><td><input name="vc-user"     /></td>-->
@@ -67,7 +83,7 @@
             <tr title="The Sources folder in project where all repositories will be listed">
                 <th>Proj Sources folder in AF
                     <sub>org/proj/Sources</sub>     </th><td><input name="af-sources-root"
-                         value="ApiFusion.org/Sources/ApiFusion.org-folders"
+                         value="${org}${lockedRepo}/${sourcePath}"
                    /><dl><dd></dd></dl></td>
             </tr>
             <tr title="Repository folder to import including root above, optional">

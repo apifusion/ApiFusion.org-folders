@@ -21,13 +21,14 @@ validateUrl('af-git-restful', '/git-restful', '//app.version').$then( u =>  gitR
 validateUrl('af-wiki-root'  , ''            , '//app.version').$then( u =>  wikiUrl       = u                            , ()=> wikiUrl       ="" );
 
 input('vc-repo').$on('input change').val().$then(onRepoChange);
+$('.step1 .regenerate').on( 'click', regenerateVcRepoView );
 
 $onSubmit( 0,  ()=>
 {
     if( !gitRestfulUrl || !wikiUrl )
         return;
     enableStep( 1 );
-    $.get( pagesUrl(), x=> orgs = x.children.map( e=>e.page_title ) );
+    $.getJSON( pagesUrl(), x=> orgs = x.children.map( e=>e.page_title ) );
     input('af-sources-root').$on('change input focus').val().$then( onSourcesRootChange );
 });
 
@@ -41,22 +42,29 @@ $onSubmit( 1, ()=>
     {   lockedRepo = x;
         enableStep( 2 );
         let $b = input('vc-branch').focus();
-        $.get( `${gitRestfulUrl}/list/${x}/branches`, a=>
+        $.getJSON( `${gitRestfulUrl}/list/${x}/branches`, a=>
         {
             $('.step2 dd').html( a.map( b=>`<a href="#">${b}</a>`).join('') )
                 .find('a').click( ev=>
                 {   ev.preventDefault();
                     $b.val( ev.target.innerHTML )
                 });
+        }).fail( function ( msg )
+        {   console.error( msg );
+            input('vc-branch').addClass('error');
         });
+    }).fail( function ( msg )
+    {   console.error( msg );
+        input('vc-repo').addClass('error');
     });
+
 });
 
 $onSubmit( 2, ()=>
 {
     let branch = input('vc-branch').val();
-    $.get( `${gitRestfulUrl}/lock-branch/${lockedRepo}/${branch}`, a=>
-    {
+    $.getJSON( `${gitRestfulUrl}/lock-branch/${lockedRepo}/${branch}`, a=>
+    {   console.log(a);
         lockedBranch = branch;
         enableStep( 3 );
     });
@@ -79,12 +87,20 @@ poolCreationQueue()
     $('input[name=pages-created]').val( ++pagesCreated );
     $('input[name=pages-to-create]').val( creationQueue.length );
 
-    let text = encodeURIComponent( JSON.stringify(r) );
-    $.Xml( `${wikiUrl}/api.php?action=query&meta=tokens&type=csrf&format=xml&titles=${r.title}`)
+    let sourcePath = r.sourcePath
+    ,   text = encodeURIComponent( getRepoLink() )
+    ,   textFolder = `
+        
+    `;
+
+    //createWikiPage( '', r.title, text )
+    //.$then( status => createWikiPage( 'Source:', r.title, getRepoLink()  ) )
+
+    $.Xml( `${wikiUrl}/api.php?action=query&meta=tokens&type=csrf&format=xml&titles=${encodeURIComponent(r.title)}`)
     .XPath( '//tokens' )
     .$then( x=> $(x).attr('csrftoken') )
     .$then( wikiEditToken => "+\\" === wikiEditToken &&  throwErr('wikiEditToken required') )
-    .$then( ( x, wikiEditToken ) => $.post( `${wikiUrl}/api.php`, `action=edit&summary=created&createonly=true&watchlist=watch&format=xml&token=${encodeURIComponent(wikiEditToken)}&title=${encodeURIComponent(r.title)}&text=${text}` ) )
+    .$then( ( x, wikiEditToken ) => $.post( `${wikiUrl}/api.php`, `action=edit&summary=created&createonly=true&watchlist=watch&format=xml&token=${encodeURIComponent(wikiEditToken)}&title=Source:${encodeURIComponent(r.title)}&text=${text}` ) )
     .xPath( '//error|//edit' )
     .$then( e =>
             {   const c = $(e).attr('code');
@@ -96,16 +112,42 @@ poolCreationQueue()
                 throw $(e).attr('info');
             })
     .$then( x=> console.log('success', x ), err => console.error( r.info = err ), r.status = 'error' )
+
+    // todo generated docs into Implementation: namespace.
     .$then( x=> renderPage( r ) );
+    function getRepoLink()
+        { return eval('`'+input('vc-repo-view').val() +'`') }
+}
+    function
+createWikiPage( ns, title, text )
+{
+    return     $.Xml( `${wikiUrl}/api.php?action=query&meta=tokens&type=csrf&format=xml&titles=${encodeURIComponent(title)}`)
+    .XPath( '//tokens' )
+    .$then( x=> $(x).attr('csrftoken') )
+    .$then( wikiEditToken => "+\\" === wikiEditToken &&  throwErr('wikiEditToken required') )
+    .$then( ( x, wikiEditToken ) => $.post( `${wikiUrl}/api.php`, `action=edit&summary=created&createonly=true&watchlist=watch&format=xml&token=${encodeURIComponent(wikiEditToken)}&title=${ns}${encodeURIComponent(title)}&text=${encodeURIComponent(text)}` ) )
+    .xPath( '//error|//edit' )
+    .$then( e =>
+            {   const c = $(e).attr('code');
+                if( 'articleexists' === c )
+                   return 'existing';
+
+                if( 'Success' === $(e).attr('result') ) // <edit new="" result="Success"
+                    return 'created';
+                throw $(e).attr('info');
+            });
 }
     function
 processFolder( folder )
 {
     console.log( 'processFolder', folder );
     const pr = folder ? `${afSourcesRoot}/${folder}` : `${afSourcesRoot}`;
-    $.get( `${gitRestfulUrl}/list?repo=${lockedRepo}&folder=${folder}`, a=>
+    $.getJSON( `${gitRestfulUrl}/list?repo=${lockedRepo}&folder=${folder}`, a=>
     {   const k = folder ? `${folder}/` :'';
-        a.forEach( r=> t2a[ `${k}${r.name}`.toLowerCase() ] = r );
+        a.forEach( r=>
+        {   r.sourcePath = `${k}${r.name}`;
+            t2a[ r.sourcePath.toLowerCase() ] = r;
+        });
         const titles = a.map( r=>`${pr}/${r.name}` );
         $.post  ( `${wikiUrl}/api.php`,`action=query&prop=info&format=xml&titles=${titles.join('|')}`
                 , x => $.Xml(x).XPath('//page').$then( processPages ) );
@@ -123,6 +165,7 @@ processPages( pages )
         pagesTotal++;
         if( p.getAttribute( 'missing' ) !== '' )
         {   r.status = 'existing';
+            // todo update page if it already does not have a reference to source (with repo, branch and path)
             renderPage(r);
             r.isDirectory && processFolder( `${k}` );
             continue;
@@ -166,6 +209,18 @@ disable( css )
     $(css).prop( "disabled", true );
 }
     function
+regenerateVcRepoView()
+{
+    let repo = input('vc-repo').val()
+    ,   parts = repo.replace('.git','').split('/')
+    ,   proj = parts.pop()
+    ,   prefix = parts.join('/')
+    ,   suffix = repo.includes('github.com') ? 'blob': 'src'
+    ,   url = prefix + '/${lockedRepo}/'+suffix+'/${lockedBranch}/${sourcePath}';
+
+    input('vc-repo-view').val(url);
+}
+    function
 onRepoChange( v )
 {   if( !v )
         return;
@@ -175,11 +230,11 @@ onRepoChange( v )
     for( let k of orgs )
         if( k.toLowerCase().indexOf(org) === 0 )
             org = k;
-    $.get( pagesUrl( org ), x=>
+    $.getJSON( pagesUrl( org ), x=>
     {
         for( let k of x.children )
             if( k.page_title.includes('/Sources') )
-                return $.get( pagesUrl( k.page_title ), x=> // traverse over Sources/*
+                return $.getJSON( pagesUrl( k.page_title ), x=> // traverse over Sources/*
                 {
                     for( let p of x.children )
                         if( hasProj( k ) )
@@ -187,7 +242,8 @@ onRepoChange( v )
                     setRoot(k.page_title + '/'+ proj )
                 });
         findProj( x );
-    }).fail( setRoot );
+    }).fail( function( msg )
+        {   console.error( pagesUrl( org ) ) });
 
         function
     hasProj( k ){ return k.page_title.split('/')[1].toLowerCase().indexOf(proj.toLowerCase() ) ===0 }
@@ -199,7 +255,7 @@ onRepoChange( v )
                 return setRoot( k.page_title+'/Sources' ); // todo test this case
     }
         function
-    setRoot( proj ){   input('af-sources-root').val(`${proj}`); }
+    setRoot( proj ){   input('af-sources-root').val(`${proj}`); regenerateVcRepoView(); }
 }
     function
 enableStep( s )
@@ -215,7 +271,7 @@ onSourcesRootChange( t )
     if( !v )
         return this.$then( fillDropdown ), orgs;
     if( 1 == v.length )
-        $.get( pagesUrl(v), x=> fillDropdown.call( this, x.children.map( e=>e.page_title ) ) );
+        $.getJSON( pagesUrl(v), x=> fillDropdown.call( this, x.children.map( e=>e.page_title ) ) );
     else
         this.xml( wikiUrl + SEARCH_URL + '$0').xPath('//*[name()="Text"]').$then( fillDropdown );
     return orgs;
