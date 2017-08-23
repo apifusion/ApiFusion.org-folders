@@ -74,13 +74,15 @@ $onSubmit( 3, ()=>
 {
     afSourcesRoot = input('af-sources-root').val();
 //    enableStep( 4 );
-    setInterval( poolCreationQueue, 300 );
-    processFolder( '' );
-    //const af = input('af-sources-root').val();
+    poolCreationQueue.handle = setInterval( poolCreationQueue, 300 );
+    processFolder( val("sources-folder-to-import") );
 });
     function
 poolCreationQueue()
 {
+    if( !creationQueue.length )
+        { clearInterval( poolCreationQueue.handle ); poolCreationQueue.handle = 0; return; }
+
     const r = creationQueue.shift();
     if( !r )
         return;
@@ -142,7 +144,7 @@ processFolder( folder )
 {
     console.log( 'processFolder', folder );
     const pr = folder ? `${afSourcesRoot}/${folder}` : `${afSourcesRoot}`;
-    $.getJSON( `${gitRestfulUrl}/list?repo=${lockedRepo}&folder=${folder}`, a=>
+    $.getJSON( `${gitRestfulUrl}/projects/${lockedRepo}/${folder}`, a=>
     {   const k = folder ? `${folder}/` :'';
         a.forEach( r=>
         {   r.sourcePath = `${k}${r.name}`;
@@ -209,17 +211,25 @@ disable( css )
     $(css).prop( "disabled", true );
 }
     function
-regenerateVcRepoView()
+regenerateVcRepoView( ev )
 {
+    ev.preventDefault();
+
     let repo = input('vc-repo').val()
     ,   parts = repo.replace('.git','').split('/')
-    ,   proj = parts.pop()
+    ,   proj  = parts.pop()
+    ,   org   = parts.pop()
     ,   prefix = parts.join('/')
     ,   suffix = repo.includes('github.com') ? 'blob': 'src'
-    ,   url = prefix + '/${lockedRepo}/'+suffix+'/${lockedBranch}/${sourcePath}';
+    ,   url    = prefix + '/${org}/${lockedRepo}/'+suffix+'/${lockedBranch}/${sourcePath}';
 
     input('vc-repo-view').val(url);
 }
+    function
+validateAfOrg(  )
+    {
+
+    }
     function
 onRepoChange( v )
 {   if( !v )
@@ -303,3 +313,4 @@ validateUrl( filedName, path, xpath )
     return $ret;
 }
 function input( name ){ return $(`input[name=${name}]`); }
+function val( name ){ return input( name ).val(); }
