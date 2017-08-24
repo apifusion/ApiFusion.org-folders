@@ -80,10 +80,10 @@
     <legend>3. Destination </legend>
     <form>
         <table>
-            <tr title="The Sources folder in project where all repositories will be listed">
+            <tr title="The Sources folder in project where all repositories will be listed &#13;${org}/${lockedRepo}/${sourcePath}">
                 <th>Proj Sources folder in AF
                     <sub>org/proj/Sources</sub>     </th><td><input name="af-sources-root"
-                         value="${org}/${lockedRepo}/${sourcePath}"
+                         value="${org}/Sources/${lockedRepo}/${sourcePath}"
                    /><dl><dd></dd></dl></td>
             </tr>
             <tr title="Repository folder to import including root above, optional">
@@ -111,6 +111,8 @@
     tr>*:nth-child(1){ text-align: right;}
     tr>*:nth-child(2){ width: 80%;}
     tr>*:nth-child(2)>*{ width: 100%;}
+    fieldset.disabled{ box-shadow: inset 0px 0px 29px 14px rgba(0,0,0,0.5); transition: box-shadow 0.3s ease-in-out }
+    fieldset.disabled legend {   padding-top: 1em; }
     /*fieldset:nth-child(3) tr>*{ width: auto;text-align: left}*/
     input.error { background-color: #DAA;}
     input.validated { background-color: #ADA;}

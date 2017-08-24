@@ -5,6 +5,7 @@ let gitRestfulUrl
 ,   wikiUrl
 ,   sourcesRoot
 ,   orgs = []
+,   org
 ,   lockedRepo
 ,   lockedBranch
 ,   afSourcesRoot
@@ -140,17 +141,18 @@ createWikiPage( ns, title, text )
             });
 }
     function
-processFolder( folder )
+processFolder( sourcePath )
 {
-    console.log( 'processFolder', folder );
-    const pr = folder ? `${afSourcesRoot}/${folder}` : `${afSourcesRoot}`;
-    $.getJSON( `${gitRestfulUrl}/projects/${lockedRepo}/${folder}`, a=>
-    {   const k = folder ? `${folder}/` :'';
+    console.log( 'processFolder', sourcePath );
+    var prExp = sourcePath ? `${afSourcesRoot}/${sourcePath}` : `${afSourcesRoot}`
+    ,   pr = eval('`'+prExp +'`');
+    $.getJSON( `${gitRestfulUrl}/projects/${lockedRepo}/${sourcePath}`, a=>
+    {   const k = sourcePath ? `${sourcePath}/` :'';
         a.forEach( r=>
         {   r.sourcePath = `${k}${r.name}`;
             t2a[ r.sourcePath.toLowerCase() ] = r;
         });
-        const titles = a.map( r=>`${pr}/${r.name}` );
+        const titles = a.map( r=>`${pr}/${r.name}`.replace("//",'/') );
         $.post  ( `${wikiUrl}/api.php`,`action=query&prop=info&format=xml&titles=${titles.join('|')}`
                 , x => $.Xml(x).XPath('//page').$then( processPages ) );
     });
@@ -158,12 +160,17 @@ processFolder( folder )
     function
 processPages( pages )
 {
+    const   sourcePath = ''
+    ,       afSrc= eval('`'+afSourcesRoot +'`');
     for( let p of pages )
     {
         let t = p.getAttribute('title')
-        ,   k = t.substring( afSourcesRoot.length+1 )
+        ,   k = t.substring( afSrc.length )
         ,   r = t2a[ k.toLowerCase() ];
-        r.title = t;
+        if( r )
+            r.title = t;
+        else
+            {   renderPage( { title: t, status:'deprecated', name: k } );  continue;   }
         pagesTotal++;
         if( p.getAttribute( 'missing' ) !== '' )
         {   r.status = 'existing';
@@ -184,7 +191,7 @@ processPages( pages )
     function
 renderPage( r )
 {
-    let status = { missing:'&times;', created:'*', existing:'&checkmark;', error:'!'}[r.status]
+    let status = { missing:'&times;', created:'*', existing:'&checkmark;', error:'!','deprecated':'&#x274C;'}[r.status]
     ,   type = r.isDirectory ? '.' : 'file';
     return $('.step4 table').append(`<tr title="${r.title}"><td><a href="${wikiUrl}/index.php/${r.title}">${r.title}</a></td><td>${type}</td><td>${status}</td></tr>`)
         .$then( x=>r );
@@ -235,8 +242,8 @@ onRepoChange( v )
 {   if( !v )
         return;
     let t = v.split('/')
-    ,   proj = t.pop().replace('.git','')
-    ,   org  = t.pop();
+    ,   proj = t.pop().replace('.git','');
+    org  = t.pop();
     for( let k of orgs )
         if( k.toLowerCase().indexOf(org) === 0 )
             org = k;
@@ -272,6 +279,8 @@ enableStep( s )
 {
     $('input').prop( "disabled", true );
     $(`.step${s} input`).prop( "disabled", false );
+    $('fieldset' ).addClass   ( "disabled" );
+    $(`.step${s}`).removeClass( "disabled" );
 }
     function
 pagesUrl( pg ){ return `${wikiUrl}/../ApiFusion.org-folders/php/Pages.php?title=${ pg||'' }`; }
