@@ -75,8 +75,9 @@ $onSubmit( 3, ()=>
 {
     afSourcesRoot = input('af-sources-root').val();
 //    enableStep( 4 );
-    poolCreationQueue.handle = setInterval( poolCreationQueue, 300 );
-    processFolder( val("sources-folder-to-import") );
+    processFolder( val("sources-folder-to-import") ).then( ready,ready );
+    function ready( x )
+        {   poolCreationQueue.handle = setInterval( poolCreationQueue, 1000 );   }
 });
     function
 poolCreationQueue()
@@ -87,73 +88,64 @@ poolCreationQueue()
     const r = creationQueue.shift();
     if( !r )
         return;
-    $('input[name=pages-created]').val( ++pagesCreated );
-    $('input[name=pages-to-create]').val( creationQueue.length );
+    input('pages-created'  ).val( ++pagesCreated        );
+    input('pages-to-create').val( creationQueue.length  );
+    input('page-processing').val( r.title               );
 
-    let sourcePath = r.sourcePath
-    ,   text = encodeURIComponent( getRepoLink() )
-    ,   textFolder = `
-        
-    `;
+    let sourcePath = r.sourcePath;
 
-    //createWikiPage( '', r.title, text )
-    //.$then( status => createWikiPage( 'Source:', r.title, getRepoLink()  ) )
-
-    $.Xml( `${wikiUrl}/api.php?action=query&meta=tokens&type=csrf&format=xml&titles=${encodeURIComponent(r.title)}`)
-    .XPath( '//tokens' )
-    .$then( x=> $(x).attr('csrftoken') )
-    .$then( wikiEditToken => "+\\" === wikiEditToken &&  throwErr('wikiEditToken required') )
-    .$then( ( x, wikiEditToken ) => $.post( `${wikiUrl}/api.php`, `action=edit&summary=created&createonly=true&watchlist=watch&format=xml&token=${encodeURIComponent(wikiEditToken)}&title=Source:${encodeURIComponent(r.title)}&text=${text}` ) )
-    .xPath( '//error|//edit' )
-    .$then( e =>
-            {   const c = $(e).attr('code');
-                if( 'articleexists' === c )
-                   return r.status = 'existing';
-
-                if( 'Success' === $(e).attr('result') ) // <edit new="" result="Success"
-                    return r.status = 'created';
-                throw $(e).attr('info');
-            })
-    .$then( x=> console.log('success', x ), err => console.error( r.info = err ), r.status = 'error' )
-
-    // todo generated docs into Implementation: namespace.
+    return createWikiPage( 'Sources', r, getRepoLink() )
     .$then( x=> renderPage( r ) );
+    // todo generated docs into Implementation: namespace.
+
     function getRepoLink()
         { return eval('`'+input('vc-repo-view').val() +'`') }
 }
     function
-createWikiPage( ns, title, text )
+createWikiPage( ns, r, text )
 {
-    return     $.Xml( `${wikiUrl}/api.php?action=query&meta=tokens&type=csrf&format=xml&titles=${encodeURIComponent(title)}`)
-    .XPath( '//tokens' )
-    .$then( x=> $(x).attr('csrftoken') )
-    .$then( wikiEditToken => "+\\" === wikiEditToken &&  throwErr('wikiEditToken required') )
-    .$then( ( x, wikiEditToken ) => $.post( `${wikiUrl}/api.php`, `action=edit&summary=created&createonly=true&watchlist=watch&format=xml&token=${encodeURIComponent(wikiEditToken)}&title=${ns}${encodeURIComponent(title)}&text=${encodeURIComponent(text)}` ) )
-    .xPath( '//error|//edit' )
-    .$then( e =>
-            {   const c = $(e).attr('code');
-                if( 'articleexists' === c )
-                   return 'existing';
+    // todo check existing and update/create only if does not match
+    const title = ( ns ? ns+':' :'' )+ encodeURIComponent(r.title);
+    return $.Xml( `${wikiUrl}/api.php?action=query&prop=revisions&rvprop=content&format=xml&titles=${title}`) // http://localhost/af/wiki/api.php?action=query&prop=revisions&rvprop=content&format=xml&titles=ApiFusion.org/Modules/AMD
+    .XPath( '//rev' )
+    .$then( x =>
+    {
+        if( x.length && x[0].innerHTML === text )
+            return r.status = 'existing';
 
-                if( 'Success' === $(e).attr('result') ) // <edit new="" result="Success"
-                    return 'created';
-                throw $(e).attr('info');
-            });
+        return     $.Xml( `${wikiUrl}/api.php?action=query&meta=tokens&type=csrf&format=xml&titles=${encodeURIComponent(title)}`)
+        .XPath( '//tokens' )
+        .$then( x=> $(x).attr('csrftoken') )
+        .$then( wikiEditToken => "+\\" === wikiEditToken &&  throwErr('wikiEditToken required') )
+        .$then( ( x, wikiEditToken ) => $.post( `${wikiUrl}/api.php`, `action=edit&summary=created&createonly=true&watchlist=watch&format=xml&token=${encodeURIComponent(wikiEditToken)}&title=${title}&text=${encodeURIComponent(text)}` ) )
+        .xPath( '//error|//edit' )
+        .$then( e =>
+                {   const c = $(e).attr('code');
+                    if( 'articleexists' === c )
+                       return r.status = 'created';
+
+                    if( 'Success' === $(e).attr('result') ) // <edit new="" result="Success"
+                        return 'created';
+                    throw $(e).attr('info');
+                });
+    });
 }
     function
 processFolder( sourcePath )
 {
     console.log( 'processFolder', sourcePath );
-    var prExp = sourcePath ? `${afSourcesRoot}/${sourcePath}` : `${afSourcesRoot}`
+    var prExp   = afSourcesRoot.includes("${sourcePath}")
+                ? `${afSourcesRoot}`
+                : `${afSourcesRoot}/${sourcePath}`
     ,   pr = eval('`'+prExp +'`');
-    $.getJSON( `${gitRestfulUrl}/projects/${lockedRepo}/${sourcePath}`, a=>
+    return $.getJSON( `${gitRestfulUrl}/projects/${lockedRepo}/${sourcePath}`, a=>
     {   const k = sourcePath ? `${sourcePath}/` :'';
         a.forEach( r=>
         {   r.sourcePath = `${k}${r.name}`;
             t2a[ r.sourcePath.toLowerCase() ] = r;
         });
         const titles = a.map( r=>`${pr}/${r.name}`.replace("//",'/') );
-        $.post  ( `${wikiUrl}/api.php`,`action=query&prop=info&format=xml&titles=${titles.join('|')}`
+        return $.post  ( `${wikiUrl}/api.php`,`action=query&prop=info&format=xml&titles=${titles.join('|')}`
                 , x => $.Xml(x).XPath('//page').$then( processPages ) );
     });
 }
@@ -193,8 +185,9 @@ renderPage( r )
 {
     let status = { missing:'&times;', created:'*', existing:'&checkmark;', error:'!','deprecated':'&#x274C;'}[r.status]
     ,   type = r.isDirectory ? '.' : 'file';
-    return $('.step4 table').append(`<tr title="${r.title}"><td><a href="${wikiUrl}/index.php/${r.title}">${r.title}</a></td><td>${type}</td><td>${status}</td></tr>`)
-        .$then( x=>r );
+    if( r.status === 'error' )
+        status += ` <i>${r.info}</i>`;
+    return $('.step4 table').append(`<tr title="${r.title}"><td><a href="${wikiUrl}/index.php/${r.title}">${r.title}</a></td><td>${type}</td><td>${status}</td></tr>`);
 }
     function
 createPage( r )
@@ -303,7 +296,7 @@ onSourcesRootChange( t )
         {   let t = i.nodeName ? $(i).text() : i
             ,   v = t.split('/');
 
-            if( v.length < 3 || ( t.includes('/Source') && !t.includes('/Source/') ) )
+            if( v.length < 3 || ( t.includes('/Sources') && !t.includes('/Sources/') ) )
                 u.append( '<a href="#">'+t+'</a>' );
         }
         u.find('a').click( function(ev)

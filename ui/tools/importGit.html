@@ -82,7 +82,7 @@
         <table>
             <tr title="The Sources folder in project where all repositories will be listed &#13;${org}/${lockedRepo}/${sourcePath}">
                 <th>Proj Sources folder in AF
-                    <sub>org/proj/Sources</sub>     </th><td><input name="af-sources-root"
+                    <sub>org/Sources/proj</sub>     </th><td><input name="af-sources-root"
                          value="${org}/Sources/${lockedRepo}/${sourcePath}"
                    /><dl><dd></dd></dl></td>
             </tr>
@@ -98,12 +98,23 @@
 </fieldset>
 <fieldset class="step4">
     <legend>4. Sync results </legend>
-    <div>Created <input name="pages-created" value="0">, remain <input name="pages-to-create" value="0"> of total <input name="pages-total" value="0"> pages</div>
+    <div>Processed <input name="pages-created" value="0">
+        , remain <input name="pages-to-create" value="0"> of total <input name="pages-total" value="0"> pages</div>
+    <div><label>Processing <input name="page-processing"></label> </div>
+    <div>TODO <label>Ignore errors <input name="page-processing" type="checkbox"></label>
+        <button name="page-processing" >Continue</button> </div>
     <table>
         <tr>
             <th>url</th><th>type</th><th>is modified</th>
         </tr>
     </table>
+Legend:
+<pre>
+    * - page created
+    &checkmark; - source has matching AF page
+    ! - error
+    &#x274C; - deprecated, AF page exist but there is no source file
+</pre>
 </fieldset>
 <style>
     table{ width: 100%; }
@@ -114,7 +125,8 @@
     fieldset.disabled{ box-shadow: inset 0px 0px 29px 14px rgba(0,0,0,0.5); transition: box-shadow 0.3s ease-in-out }
     fieldset.disabled legend {   padding-top: 1em; }
     /*fieldset:nth-child(3) tr>*{ width: auto;text-align: left}*/
-    input.error { background-color: #DAA;}
+
+    .step4 table i { background-color: #DAA;}
     input.validated { background-color: #ADA;}
     dl{ display: none; position: relative; top: -1px; margin: 0; }
     dd{ padding: 0.2em; display: block;margin: 0; position: absolute;background: #EEE;}
@@ -123,6 +135,8 @@
     td:hover dl,td:focus dl, input:focus~dl { display: block;  }
     .step4 tr>*:nth-child(1) { text-align: left;  }
     .step4 tr>*:nth-child(2) { width: 10%; }
+    input[name=page-processing]{ width:80%; }
+
 </style>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script type="text/javascript" src="../lib/xml4jquery.bundle.js"></script>
