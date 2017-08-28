@@ -5,7 +5,8 @@ let gitRestfulUrl
 ,   wikiUrl
 ,   sourcesRoot
 ,   orgs = []
-,   org
+,   org4Git
+,   org4Af
 ,   lockedRepo
 ,   lockedBranch
 ,   afSourcesRoot
@@ -75,7 +76,7 @@ $onSubmit( 3, ()=>
 {
     afSourcesRoot = input('af-sources-root').val();
 //    enableStep( 4 );
-    processFolder( val("sources-folder-to-import") ).then( ready,ready );
+    processRoot( val("sources-folder-to-import") ).then( ready,ready );
     function ready( x )
         {   poolCreationQueue.handle = setInterval( poolCreationQueue, 1000 );   }
 });
@@ -92,14 +93,15 @@ poolCreationQueue()
     input('pages-to-create').val( creationQueue.length  );
     input('page-processing').val( r.title               );
 
-    let sourcePath = r.sourcePath;
+    let sourcePath = r.sourcePath
+    ,   org = org4Git;
 
     return createWikiPage( 'Sources', r, getRepoLink() )
     .$then( x=> renderPage( r ) );
     // todo generated docs into Implementation: namespace.
 
     function getRepoLink()
-        { return eval('`'+input('vc-repo-view').val() +'`') }
+        { return eval('`'+val('vc-repo-view') +'`') }
 }
     function
 createWikiPage( ns, r, text )
@@ -131,33 +133,56 @@ createWikiPage( ns, r, text )
     });
 }
     function
-processFolder( sourcePath )
+source2Af( sourcePath )
 {
-    console.log( 'processFolder', sourcePath );
-    var prExp   = afSourcesRoot.includes("${sourcePath}")
+    var prExp   = afSourcesRoot.includes("${sourcePath}") || !sourcePath || sourcePath === '/'
                 ? `${afSourcesRoot}`
                 : `${afSourcesRoot}/${sourcePath}`
     ,   pr = eval('`'+prExp +'`');
-    return $.getJSON( `${gitRestfulUrl}/projects/${lockedRepo}/${sourcePath}`, a=>
-    {   const k = sourcePath ? `${sourcePath}/` :'';
-        a.forEach( r=>
-        {   r.sourcePath = `${k}${r.name}`;
+    
+    return pr.endsWith('/') ? pr.substring(0,pr.length-1): pr;
+}
+    function
+processFolder( sourcePath )
+{
+    console.log( 'processFolder', sourcePath );
+    var pr = source2Af( sourcePath );
+    return $.getJSON( `${gitRestfulUrl}/projects/${lockedRepo}/${sourcePath}/`
+    , a=>
+    {   a.forEach( r=>
+        {   r.sourcePath = sourcePath && sourcePath !== '/' ? `${sourcePath}/${r.name}` : `${r.name}`;
             t2a[ r.sourcePath.toLowerCase() ] = r;
         });
-        const titles = a.map( r=>`${pr}/${r.name}`.replace("//",'/') );
+        const titles = a.map( r => `${pr}/${r.name}`.replace("//",'/') );
         return $.post  ( `${wikiUrl}/api.php`,`action=query&prop=info&format=xml&titles=${titles.join('|')}`
                 , x => $.Xml(x).XPath('//page').$then( processPages ) );
+    });
+}
+    function
+processRoot( sourcePath )
+{
+    console.log( 'processFolder', sourcePath );
+    var pr = source2Af( sourcePath );
+    return $.getJSON( `${gitRestfulUrl}/projects/${lockedRepo}`
+    , a=>
+    {   a.forEach( r=>
+        {   r.name = r.sourcePath = '';
+            t2a[ r.sourcePath.toLowerCase() ] = r;
+        });
+        return $.post( `${wikiUrl}/api.php`,`action=query&prop=info&format=xml&titles=${pr}`
+                     , x => $.Xml(x).XPath('//page').$then( processPages ) );
     });
 }
     function
 processPages( pages )
 {
     const   sourcePath = ''
+    ,       org = org4Git
     ,       afSrc= eval('`'+afSourcesRoot +'`');
     for( let p of pages )
     {
         let t = p.getAttribute('title')
-        ,   k = t.substring( afSrc.length )
+        ,   k = t.substring( afSrc.length+1 )
         ,   r = t2a[ k.toLowerCase() ];
         if( r )
             r.title = t;
@@ -213,7 +238,7 @@ disable( css )
     function
 regenerateVcRepoView( ev )
 {
-    ev.preventDefault();
+    ev && ev.preventDefault();
 
     let repo = input('vc-repo').val()
     ,   parts = repo.replace('.git','').split('/')
@@ -236,11 +261,11 @@ onRepoChange( v )
         return;
     let t = v.split('/')
     ,   proj = t.pop().replace('.git','');
-    org  = t.pop();
+    org4Git  = org4Af = t.pop();
     for( let k of orgs )
-        if( k.toLowerCase().indexOf(org) === 0 )
-            org = k;
-    $.getJSON( pagesUrl( org ), x=>
+        if( k.toLowerCase().indexOf(org4Git) === 0 )
+            org4Af = k;
+    $.getJSON( pagesUrl( org4Af ), x=>
     {
         for( let k of x.children )
             if( k.page_title.includes('/Sources') )
@@ -253,7 +278,7 @@ onRepoChange( v )
                 });
         findProj( x );
     }).fail( function( msg )
-        {   console.error( pagesUrl( org ) ) });
+        {   console.error( pagesUrl( org4Af ) ) });
 
         function
     hasProj( k ){ return k.page_title.split('/')[1].toLowerCase().indexOf(proj.toLowerCase() ) ===0 }
