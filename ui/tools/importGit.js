@@ -106,7 +106,6 @@ poolCreationQueue()
     function
 createWikiPage( ns, r, text )
 {
-    // todo check existing and update/create only if does not match
     const title = ( ns ? ns+':' :'' )+ encodeURIComponent(r.title);
     return $.Xml( `${wikiUrl}/api.php?action=query&prop=revisions&rvprop=content&format=xml&titles=${title}`) // http://localhost/af/wiki/api.php?action=query&prop=revisions&rvprop=content&format=xml&titles=ApiFusion.org/Modules/AMD
     .XPath( '//rev' )
