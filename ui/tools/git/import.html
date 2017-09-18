@@ -1,0 +1,145 @@
+<!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Import from version control - ApiFusion </title>
+</head>
+<body>
+<h1>Import git repository hierarchy into wiki</h1>
+<a href="https://www.apifusion.com/wiki/index.php/ApiFusion.org/Modules/Import#GIT_Repositories"> More info </a>
+<fieldset class="step0">
+    <legend>0. Connect to Wiki and git-restful</legend>
+    <form >
+        <table>
+            <tr title="git-restful server URL
+                        http://localhost:8080
+                    ">
+                <th><a href="https://www.apifusion.com/wiki/index.php/ApiFusion.org/Sources/git-restful">git-restful</a> root    </th>
+                <td><input name="af-git-restful"  value="http://localhost:8080"   /></td>
+            </tr>
+            <tr title="wiki root URL
+                        /wiki
+                    ">
+                <th>AF wiki root URL  </th><td><input name="af-wiki-root"  value="/af/wiki" /></td>
+            </tr>
+            <tr>
+                <th> <input type="submit" value="connect" /></th><td></td>
+            </tr>
+        </table>
+    </form>
+</fieldset>
+<fieldset class="step1">
+    <legend>1. Pick repository</legend>
+    <form>
+        <table>
+            <tr title="version control URL, required">
+                <th>git repo url        </th><td><input name="vc-repo"  /></td>
+            </tr>
+            <tr title="version control URL, sample">
+                <th>sample        </th><td>https://github.com/apifusion/git-restful.git</td>
+            </tr>
+            <tr title="URL mask where the sources could be viewed, required">
+                <th> path to view sources <button class="regenerate">&#8635;</button></th><td><input name="vc-repo-view"  value="https://github.com/apifusion/${lockedRepo}/blob/${lockedBranch}/${sourcePath}"   />             </td>
+            </tr>
+            <tr title="URL mask where the sources could be viewed, sample">
+                <th> sample</th><td>
+                    https://github.com/${org}/${lockedRepo}/blob/${lockedBranch}/${sourcePath}<br/>
+                    https://bitbucket.org/${org}/${lockedRepo}/src/${lockedBranch}/${sourcePath}
+                </td>
+            </tr>
+            <!--<tr title="User name for Version control, optional if anonymous access permitted">-->
+                <!--<th>user        </th><td><input name="vc-user"     /></td>-->
+            <!--</tr>-->
+            <!--<tr><th>password    </th><td><input name="vc-password" /></td>-->
+            <!--</tr>-->
+            <tr>
+                <th> <input type="submit" value="next" /></th><td></td>
+            </tr>
+        </table>
+    </form>
+</fieldset>
+<fieldset class="step2">
+    <legend>2. Branch to sync up</legend>
+    <form>
+        <table>
+            <tr>
+                <th>VC branch   </th><td><input name="vc-branch"  value="master"   /><dl><dd></dd></dl></td><td>git fetch && git branch -r </td>
+            </tr>
+            <!--<tr>-->
+                <!--<th>VC folders  </th><td><textarea name="vc-folders" ></textarea></td><td>git ls-tree -r master &#45;&#45;name-only</td>-->
+            <!--</tr>-->
+            <tr>
+                <th><input type="submit" value="next" /></th><td></td><td></td>
+            </tr>
+        </table>
+    </form>
+</fieldset>
+<fieldset class="step3">
+    <legend>3. Destination </legend>
+    <form>
+        <table>
+            <tr title="The Sources folder in project where all repositories will be listed &#13;${org}/${lockedRepo}/${sourcePath}">
+                <th>Proj Sources folder in AF
+                    <sub>org/Sources/proj</sub>     </th><td><input name="af-sources-root"
+                         value="${org}/Sources/${lockedRepo}/${sourcePath}"
+                   /><dl><dd></dd></dl></td>
+            </tr>
+            <tr title="Repository folder to import including root above, optional">
+                <th>Repo folder to import  </th><td><input name="sources-folder-to-import" placeholder="todo"
+                    /></td>
+            </tr>
+            <tr>
+                <th><input type="submit" value="next" /></th><td></td><td></td>
+            </tr>
+        </table>
+    </form>
+</fieldset>
+<fieldset class="step4">
+    <legend>4. Sync results </legend>
+    <div>Processed <input name="pages-created" value="0">
+        , remain <input name="pages-to-create" value="0"> of total <input name="pages-total" value="0"> pages</div>
+    <div><label>Processing <input name="page-processing"></label> </div>
+    <div>TODO <label>Ignore errors <input name="page-processing" type="checkbox"></label>
+        <button name="page-processing" >Continue</button> </div>
+    <table>
+        <tr>
+            <th>url</th><th>type</th><th>is modified</th>
+        </tr>
+    </table>
+Legend:
+<pre>
+    * - page created
+    &checkmark; - source has matching AF page
+    ! - error
+    &#x274C; - deprecated, AF page exist but there is no source file
+</pre>
+</fieldset>
+<style>
+    table{ width: 100%; }
+    tr:hover{background-color: #b0d9ee; }
+    tr>*:nth-child(1){ text-align: right;}
+    tr>*:nth-child(2){ width: 80%;}
+    tr>*:nth-child(2)>*{ width: 100%;}
+    fieldset.disabled{ box-shadow: inset 0px 0px 29px 14px rgba(0,0,0,0.5); transition: box-shadow 0.3s ease-in-out }
+    fieldset.disabled legend {   padding-top: 1em; }
+    /*fieldset:nth-child(3) tr>*{ width: auto;text-align: left}*/
+
+    .step4 table i { background-color: #DAA;}
+    input.validated { background-color: #ADA;}
+    dl{ display: none; position: relative; top: -1px; margin: 0; }
+    dd{ padding: 0.2em; display: block;margin: 0; position: absolute;background: #EEE;}
+    dd a{display: block; padding: 0.2em; }
+    dd a:hover{background-color: palegreen;}
+    td:hover dl,td:focus dl, input:focus~dl { display: block;  }
+    .step4 tr>*:nth-child(1) { text-align: left;  }
+    .step4 tr>*:nth-child(2) { width: 10%; }
+    input[name=page-processing]{ width:80%; }
+
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script type="text/javascript" src="../../lib/xml4jquery.bundle.js"></script>
+<script type="text/javascript" src="import.js"></script>
+</body>
+</html>
