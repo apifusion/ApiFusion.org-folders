@@ -46,7 +46,7 @@ $onSubmit( 1, ()=>
         let $b = input('vc-branch').focus();
         $.getJSON( `${gitRestfulUrl}/list/${x}/branches`, a=>
         {
-            $('.step2 dd').html( a.map( b=>`<a href="#">${b}</a>`).join('') )
+            $('.step2 dd').html( '<html>'+a.map( b=>`<a href="#">${b}</a>`).join('') + '</html>' )
                 .find('a').click( ev=>
                 {   ev.preventDefault();
                     $b.val( ev.target.innerHTML )
@@ -96,7 +96,7 @@ poolCreationQueue()
     let sourcePath = r.sourcePath
     ,   org = org4Git;
 
-    return createWikiPage( 'Sources', r, getRepoLink() )
+    return createWikiPage( 'Sources', r, getRepoLink(), lockedBranch )
     .$then( x=> renderPage( r ) );
     // todo generated docs into Implementation: namespace.
 
@@ -104,32 +104,59 @@ poolCreationQueue()
         { return eval('`'+val('vc-repo-view') +'`') }
 }
     function
-createWikiPage( ns, r, text )
+createWikiPage( ns, r, text, section )
 {
+    // todo get wiki text 4 branch
+    // compare with generated doc in b
+    // overrite if differ
     const title = ( ns ? ns+':' :'' )+ encodeURIComponent(r.title);
-    return $.Xml( `${wikiUrl}/api.php?action=query&prop=revisions&rvprop=content&format=xml&titles=${title}`) // http://localhost/af/wiki/api.php?action=query&prop=revisions&rvprop=content&format=xml&titles=ApiFusion.org/Modules/AMD
-    .XPath( '//rev' )
-    .$then( x =>
-    {
-        if( x.length && x[0].innerHTML === text )
-            return r.status = 'existing';
+    return getSections( title )
+        .$then( a =>
+        {   const si = [...a].map( e=> e.getAttribute('anchor') ).indexOf(section)
+            ,     sectionId = si<0 ? "new" : si+1
+            ,     sectionText = section ? `= ${section} =\n${text}` : text
+            ,     sectionParams = si < 0 ? '' : `&section=${sectionId}&sectionTitle=${encodeURIComponent(section)}`;
+            if( si < 0)
+                return createSection();
+            return $.Xml( `${wikiUrl}/api.php?format=xml&action=parse&prop=wikitext&&section=${sectionId}&page=${title}`)
+                    .$then( createSection );
 
-        return     $.Xml( `${wikiUrl}/api.php?action=query&meta=tokens&type=csrf&format=xml&titles=${encodeURIComponent(title)}`)
-        .XPath( '//tokens' )
-        .$then( x=> $(x).attr('csrftoken') )
-        .$then( wikiEditToken => "+\\" === wikiEditToken &&  throwErr('wikiEditToken required') )
-        .$then( ( x, wikiEditToken ) => $.post( `${wikiUrl}/api.php`, `action=edit&summary=created&createonly=true&watchlist=watch&format=xml&token=${encodeURIComponent(wikiEditToken)}&title=${title}&text=${encodeURIComponent(text)}` ) )
-        .xPath( '//error|//edit' )
-        .$then( e =>
-                {   const c = $(e).attr('code');
-                    if( 'articleexists' === c )
-                       return r.status = 'created';
+            function createSection( doc )
+            {
+                const aftext = doc ? $(doc).text() : '';
+                if( aftext === sectionText )
+                    return r.status = 'existing';
+                if( aftext )
+                    r.status = 'updated';    
+                return $.Xml( `${wikiUrl}/api.php?action=query&meta=tokens&type=csrf&format=xml&titles=${title}`)
+                        .XPath( '//tokens' )
+                        .$then( x=> $(x).attr('csrftoken') )
+                        .$then( wikiEditToken => "+\\" === wikiEditToken &&  throwErr('wikiEditToken required') )
+                        .$then( ( x, wikiEditToken ) => $.post( `${wikiUrl}/api.php`
+                                , `action=edit${sectionParams}&watchlist=watch&format=xml&token=${encodeURIComponent(wikiEditToken)}&title=${title}&text=${encodeURIComponent(sectionText)}` ) )
+                                // todo use section in post
+                        .xPath( '//error|//edit' )
+                        .$then( e =>
+                            {   const c = $(e).attr('code');
+                                if( 'articleexists' === c )
+                                   return r.status = 'created';
 
-                    if( 'Success' === $(e).attr('result') ) // <edit new="" result="Success"
-                        return 'created';
-                    throw $(e).attr('info');
-                });
-    });
+                                if( 'Success' === $(e).attr('result') ) // <edit new="" result="Success"
+                                    return 'created';
+                                throw $(e).attr('info');
+                            });
+
+            }
+        })
+        // 0. for http://localhost/af/wiki/index.php/Sources:ApiFusion.org/Sources/git-restful/src/main/java/org/apifusion/git_restful/Application
+        // 1. get list of sections http://localhost/af/wiki/api.php?action=parse&prop=sections&page=Sources:ApiFusion.org/Sources/git-restful/src/main/java/org/apifusion/git%20restful/Application&format=xml
+        // 2. get section by # http://localhost/af/wiki/api.php?format=xml&action=parse&prop=wikitext&&section=1&page=Sources:ApiFusion.org/Sources/git-restful/src/main/java/org/apifusion/git_restful/Application&format=xml
+}
+    function
+getSections( nsAndTitle )
+{
+    return $.Xml( `${wikiUrl}/api.php?action=parse&prop=sections&format=xml&page=${nsAndTitle}`)
+            .XPath( '//sections/s' )
 }
     function
 source2Af( sourcePath )
@@ -160,16 +187,37 @@ processFolder( sourcePath )
     function
 processRoot( sourcePath )
 {
-    console.log( 'processFolder', sourcePath );
+    console.log( 'processFolder '+ sourcePath );
     var pr = source2Af( sourcePath );
     return $.getJSON( `${gitRestfulUrl}/projects/${lockedRepo}`
     , a=>
     {   a.forEach( r=>
         {   r.name = r.sourcePath = '';
+            r.title= pr;
             t2a[ r.sourcePath.toLowerCase() ] = r;
+            $.getJSON(`${gitRestfulUrl}/docs/${lockedRepo}`
+            ,   b =>
+            {   iteration();
+                function iteration()
+                {   if( !b.length ) 
+                        return;
+                    let f = b.pop();
+                    console.log( "processing", f );
+                    $.get(`${gitRestfulUrl}${f.href}`) // todo check for protocol or port#
+                    .done(  html=>
+                    {   console.log(html);
+                        return createWikiPage( 'Implementation', r, html, lockedBranch ).then( ()=>
+                        {   const mainHtml = `<edit-only>The section is generated. Do not remove.<edit-only>
+                                {{Implementation}}`;
+                            return createWikiPage('',r,mainHtml,'Implementation')
+                        })
+                    }).always( iteration );
+                }
+            });
         });
-        return $.post( `${wikiUrl}/api.php`,`action=query&prop=info&format=xml&titles=${pr}`
-                     , x => $.Xml(x).XPath('//page').$then( processPages ) );
+
+//         return $.post( `${wikiUrl}/api.php`,`action=query&prop=info&format=xml&titles=${pr}`
+//                      , x => $.Xml(x).XPath('//page').$then( processPages ) );
     });
 }
     function
@@ -207,7 +255,7 @@ processPages( pages )
     function
 renderPage( r )
 {
-    let status = { missing:'&times;', created:'*', existing:'&checkmark;', error:'!','deprecated':'&#x274C;'}[r.status]
+    let status = { missing:'&times;', created:'*', updated:'&checkmark;*',existing:'&checkmark;', error:'!','deprecated':'&#x274C;'}[r.status]
     ,   type = r.isDirectory ? '.' : 'file';
     if( r.status === 'error' )
         status += ` <i>${r.info}</i>`;
@@ -246,7 +294,7 @@ regenerateVcRepoView( ev )
     ,   prefix = parts.join('/')
     ,   suffix = repo.includes('github.com') ? 'blob': 'src'
     ,   url    = prefix + '/${org}/${lockedRepo}/'+suffix+'/${lockedBranch}/${sourcePath}';
-
+    //onRepoChange( repo );
     input('vc-repo-view').val(url);
 }
     function
