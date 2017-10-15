@@ -1,0 +1,36 @@
+<link rel="import" href="../polymer/polymer-element.html">
+
+<dom-module id="af-branches">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <h2>Hello [[prop1]]!</h2>
+  </template>
+
+  <script>
+    /**
+     * `af-branches`
+     * Version control Branches selector out of Implementation namespace headers of ApiFusion git source import mediawiki page
+     *
+     * @customElement
+     * @polymer
+     * @demo demo/index.html
+     */
+    class AfBranches extends Polymer.Element {
+      static get is() { return 'af-branches'; }
+      static get properties() {
+        return {
+          prop1: {
+            type: String,
+            value: 'af-branches'
+          }
+        };
+      }
+    }
+
+    window.customElements.define(AfBranches.is, AfBranches);
+  </script>
+</dom-module>
