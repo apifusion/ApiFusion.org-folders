@@ -76,7 +76,7 @@ $onSubmit( 3, ()=>
 {
     afSourcesRoot = input('af-sources-root').val();
 //    enableStep( 4 );
-    processRoot( val("sources-folder-to-import") ).then( ready,ready );
+    processSource( val( "sources-folder-to-import") ).then( ready, ready );
     function ready( x )
         {   poolCreationQueue.handle = setInterval( poolCreationQueue, 1000 );   }
 });
@@ -92,17 +92,12 @@ poolCreationQueue()
     input('pages-created'  ).val( ++pagesCreated        );
     input('pages-to-create').val( creationQueue.length  );
     input('page-processing').val( r.title               );
+    renderWiki( r );
 
-    let sourcePath = r.sourcePath
-    ,   org = org4Git;
-
-    return createWikiPage( 'Sources', r, getRepoLink(), lockedBranch )
-    .$then( x=> renderPage( r ) );
-    // todo generated docs into Implementation: namespace.
-
-    function getRepoLink()
-        { return eval('`'+val('vc-repo-view') +'`') }
+    //return createWikiPage( 'Sources', r, getRepoLink(), lockedBranch )
+    //    .$then( x=> renderPage( r ) );
 }
+
     function
 createWikiPage( ns, r, text, section )
 {
@@ -157,6 +152,7 @@ getSections( nsAndTitle )
 {
     return $.Xml( `${wikiUrl}/api.php?action=parse&prop=sections&format=xml&page=${nsAndTitle}`)
             .XPath( '//sections/s' )
+            .$then( a=>a, err=>[] )
 }
     function
 source2Af( sourcePath )
@@ -169,25 +165,76 @@ source2Af( sourcePath )
     return pr.endsWith('/') ? pr.substring(0,pr.length-1): pr;
 }
     function
-processFolder( sourcePath )
+processSource( sourcePath /** sourcePath to fill creationQueue from source tree */ )
 {
-    console.log( 'processFolder', sourcePath );
+    console.log( 'processSource', sourcePath );
     var pr = source2Af( sourcePath );
-    return $.getJSON( `${gitRestfulUrl}/projects/${lockedRepo}/${sourcePath}/`
-    , a=>
-    {   a.forEach( r=>
-        {   r.sourcePath = sourcePath && sourcePath !== '/' ? `${sourcePath}/${r.name}` : `${r.name}`;
-            t2a[ r.sourcePath.toLowerCase() ] = r;
+    return $.getJSON( sourcePath ? `${gitRestfulUrl}/projects/${lockedRepo}/${sourcePath}`: `${gitRestfulUrl}/projects/${lockedRepo}`
+        , a=>
+        {   a.forEach( r=>
+            {   r.sourcePath =!sourcePath 
+                             ? ''
+                             : sourcePath === '/' 
+                                ? r.name 
+                                : sourcePath.endsWith('/') 
+                                    ? `${sourcePath}${r.name}`
+                                    : `${sourcePath}/${r.name}`;
+                r.title = source2Af( r.sourcePath );
+                t2a[ r.sourcePath.toLowerCase() ] = r;
+                $('input[name=pages-to-create]').val( creationQueue.push(r) );
+
+                if( r.isDirectory )
+                    processSource( r.sourcePath+'/' );
+            });
         });
-        const titles = a.map( r => `${pr}/${r.name}`.replace("//",'/') );
-        return $.post  ( `${wikiUrl}/api.php`,`action=query&prop=info&format=xml&titles=${titles.join('|')}`
-                , x => $.Xml(x).XPath('//page').$then( processPages ) );
-    });
 }
     function
-processRoot( sourcePath )
+renderWiki( r )
 {
-    console.log( 'processFolder '+ sourcePath );
+    const sourcePath = r.sourcePath;
+    console.log( 'renderWiki ' + sourcePath );
+
+    createWikiPage( 'Sources', r, getRepoLink(r), lockedBranch )
+    .$then( O=> createWikiPage( '',r,'{{ApiFusion.org/Sources/ApiFusion.org-folders/ui/Sources/imported}}','Generated') )
+    .$then( O=> $.getJSON(`${gitRestfulUrl}/docs/${lockedRepo}/${sourcePath}`
+                    ,   b =>
+                    {   iteration();
+                        function iteration()
+                        {   if( !b.length )
+                                return;
+                            let f = b.pop();
+                            console.log( "processing docs", f );
+                            $.get(`${gitRestfulUrl}${f.href}`) // todo check for protocol or port#
+                            .done(  html=>
+                            {   console.log(html);
+                                return createWikiPage( 'Implementation', r, html, lockedBranch )
+                            }).always( iteration );
+                        }
+                    }))
+    .$then( O=>r, err=> $.extend( r, {status:'error',info:err} ) )
+    .$then( onStatusChange );
+}
+    function
+getRepoLink( r )
+{
+    let sourcePath = r.sourcePath
+    ,   org = org4Git;
+    return eval('`'+val('vc-repo-view') +'`')
+}
+
+    function
+onStatusChange( r )
+{
+    let status = { missing:'&times;', created:'*', updated:'&checkmark;*',existing:'&checkmark;', error:'!','deprecated':'&#x274C;'}[r.status]
+    ,   type = r.isDirectory ? '.' : 'file';
+    if( r.status === 'error' )
+        status += ` <i>${r.info}</i>`;
+    return $('.step4 table').append(`<tr title="${r.title}"><td><a href="${wikiUrl}/index.php/${r.title}">${r.title}</a></td><td>${type}</td><td>${status}</td></tr>`);
+}
+    function
+renderWiki_0( sourcePath )
+{
+    console.log( 'processRoot ' + sourcePath );
     var pr = source2Af( sourcePath );
     return $.getJSON( `${gitRestfulUrl}/projects/${lockedRepo}`
     , a=>
@@ -195,25 +242,24 @@ processRoot( sourcePath )
         {   r.name = r.sourcePath = '';
             r.title= pr;
             t2a[ r.sourcePath.toLowerCase() ] = r;
-            $.getJSON(`${gitRestfulUrl}/docs/${lockedRepo}`
-            ,   b =>
-            {   iteration();
-                function iteration()
-                {   if( !b.length ) 
-                        return;
-                    let f = b.pop();
-                    console.log( "processing", f );
-                    $.get(`${gitRestfulUrl}${f.href}`) // todo check for protocol or port#
-                    .done(  html=>
-                    {   console.log(html);
-                        return createWikiPage( 'Implementation', r, html, lockedBranch ).then( ()=>
-                        {   const mainHtml = `<edit-only>The section is generated. Do not remove.<edit-only>
-                                {{Implementation}}`;
-                            return createWikiPage('',r,mainHtml,'Implementation')
-                        })
-                    }).always( iteration );
-                }
-            });
+
+            createWikiPage( '',r,'{{ApiFusion.org/Sources/ApiFusion.org-folders/ui/Sources/imported}}','Generated')
+            .$then( ()=>
+                $.getJSON(`${gitRestfulUrl}/docs/${lockedRepo}`
+                ,   b =>
+                {   iteration();
+                    function iteration()
+                    {   if( !b.length )
+                            return;
+                        let f = b.pop();
+                        console.log( "processing", f );
+                        $.get(`${gitRestfulUrl}${f.href}`) // todo check for protocol or port#
+                        .done(  html=>
+                        {   console.log(html);
+                            return createWikiPage( 'Implementation', r, html, lockedBranch )
+                        }).always( iteration );
+                    }
+                }));
         });
 
 //         return $.post( `${wikiUrl}/api.php`,`action=query&prop=info&format=xml&titles=${pr}`
@@ -240,14 +286,14 @@ processPages( pages )
         {   r.status = 'existing';
             // todo update page if it already does not have a reference to source (with repo, branch and path)
             renderPage(r);
-            r.isDirectory && processFolder( `${k}` );
+            r.isDirectory && processSource( `${k}` );
             continue;
         }
 
         r.status = 'missing'; // todo do not process, mark previously deleted. Use action=query&prop=deletedrevisions
         createPage(r).$then( r=>
         {
-            r.isDirectory && processFolder( `${k}` )
+            r.isDirectory && processSource( `${k}` )
         });
     }
     $('input[name=pages-total]').val( pagesTotal );
