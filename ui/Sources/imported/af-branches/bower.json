@@ -3,7 +3,11 @@
   "description": "Version control Branches selector out of Implementation namespace headers of ApiFusion git source import mediawiki page",
   "main": "af-branches.html",
   "dependencies": {
-    "polymer": "Polymer/polymer#^2.0.0"
+    "polymer": "Polymer/polymer#^2.0.0",
+    "vaadin-material-theme": "vaadin/vaadin-material-theme#^0.3.0",
+    "vaadin-combo-box": "vaadin/vaadin-combo-box#^3.0.0",
+    "iron-ajax": "polymerelements/iron-ajax#^2.0.5",
+    "vaadin-valo-theme": "vaadin/vaadin-valo-theme#^0.3.2"
   },
   "devDependencies": {
     "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",
