@@ -12,15 +12,46 @@
     <script>
 
     </script>
-    <script src="https://ajax.googleapis.com/ajax/libs/dojo/1.10.1/dojo/dojo.js" ></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/dojo/1.12.2/dojo/dojo.js" ></script>
     <script>
+// todo CDN samples
+// <link href='https://cdn.vaadin.com/vaadin-elements/latest/vaadin-grid/vaadin-grid.html' rel='import'>
+// https://polygit.org/
+// if conflict between CDNs, could be base href set dynamically and loads grouped by CDN hosts
 
+define('link-import',function(  ) {
+    return  {   load: function (name, req, onload, config)
+                {
+                    // req has the same API as require()
+                    var mid = name.split('|')[0]
+                    ,   url = req.toUrl( name )
+                    ,   el = document.createElement('link');
+                    el.setAttribute('rel','import');
+                    el.setAttribute('href',url);
+                    var orig_name = name.substring( name.lastIndexOf('/')+1, name.lastIndexOf('.') );
+                    if( name.includes('nowait') )
+                        onload( orig_name );// todo on link loaded event
+                    else
+                        window.customElements.whenDefined(orig_name).then( value =>
+                        {
+                            onload(orig_name);
+                            console.log(`${orig_name} - ${url} - ${value}` );
+                        }, (err)=>console.log(`${orig_name} - ERROR ${err} - ${url}` ) );
+                    document.head.appendChild(el);
+                }
+            };
+});
+require([   "/components/webcomponentsjs/webcomponents-lite.js"
+        ,   "link-import!/components/iron-demo-helpers/demo-pages-shared-styles.html|nowait"
+        ,   "link-import!/components/iron-demo-helpers/demo-snippet.html"
+        ,   "link-import!../af-branches.html"
+        ], (a,b,c,d)=> console.log(` ${a} ${b} ${c} ${d}`) );
     </script>
     <script src="/components/webcomponentsjs/webcomponents-lite.js"></script>
 
-    <link rel="import" href="/components/iron-demo-helpers/demo-pages-shared-styles.html">
-    <link rel="import" href="/components/iron-demo-helpers/demo-snippet.html">
-    <link rel="import" href="../af-branches.html">
+    <!--<link rel="import" href="/components/iron-demo-helpers/demo-pages-shared-styles.html">-->
+    <!--<link rel="import" href="/components/iron-demo-helpers/demo-snippet.html">-->
+    <!--<link rel="import" href="../af-branches.html">-->
 
     <custom-style>
         <style is="custom-style" include="demo-pages-shared-styles">
