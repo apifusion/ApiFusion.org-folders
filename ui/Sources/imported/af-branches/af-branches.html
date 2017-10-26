@@ -1,8 +1,8 @@
-<link rel="import" href="../polymer/polymer-element.html">
-<link rel="import" href="bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="/components/polymer/polymer-element.html">
+<link rel="import" href="/components/iron-ajax/iron-ajax.html">
 <!--<link rel="import" href="bower_components/vaadin-valo-theme/vaadin-combo-box.html">-->
-<link rel="import" href="bower_components/vaadin-material-theme/vaadin-text-field.html">
-<link rel="import" href="bower_components/vaadin-combo-box/vaadin-combo-box.html">
+<link rel="import" href="/components/vaadin-material-theme/vaadin-text-field.html">
+<link rel="import" href="/components/vaadin-combo-box/vaadin-combo-box.html">
 
 <dom-module id="af-branches">
     <template>
@@ -11,31 +11,42 @@
         </style>
         <iron-ajax url="[[wgScriptPath]]/api.php?format=json&action=parse&prop=sections&page=Sources:[[wgPageName]]" last-response="{{sections}}" auto></iron-ajax>
         <vaadin-combo-box label="Branch" items="[[sections.parse.sections]]" item-value-path="line" item-label-path="line"></vaadin-combo-box>
+
     </template>
 
     <script>
         // http://localhost/af/wiki/api.php?action=parse&prop=sections&page=Sources:ApiFusion.org/Sources/git-restful/src/main/java/org/apifusion/git_restful
-        /**
-         * `af-branches`
-         * Version control Branches selector out of Implementation namespace headers of ApiFusion git source import mediawiki page
-         *
-         * @customElement
-         * @polymer
-         * @demo demo/index.html
-         */
-        class AfBranches extends Polymer.Element
+        define('af-branches',()=>
         {
-            static get is() { return 'af-branches'; }
 
-            static get properties()
+            /**
+             * `af-branches`
+             * Version control Branches selector out of Implementation namespace headers of ApiFusion git source import mediawiki page
+             *
+             * @customElement
+             * @polymer
+             * @demo demo/index.html
+             */
+            class AfBranches extends Polymer.Element
             {
-                return  {   /** {{PAGENAME}} mediawiki page (title)             */ wgPageName  : String
-                        ,   /** {{SCRIPTPATH}} path to mediawiki to get API url */ wgScriptPath: String
-                        ,   /** selected branch to show/compare against         */ branch      : {   type: String, reflectToAttribute: true, notify: true, value: 'master' }
-                        };
-            }
-        }
+                static get is() { return 'af-branches'; }
 
-        window.customElements.define( AfBranches.is, AfBranches );
+                static get properties()
+                {
+                    return  {   /** {{PAGENAME}} mediawiki page (title)             */ wgPageName: String
+                            ,   /** {{SCRIPTPATH}} path to mediawiki to get API url */ wgScriptPath: String
+                            ,   /** selected branch to show/compare against         */ branch:
+                                {   type: String
+                                ,   reflectToAttribute: true
+                                ,   notify: true
+                                ,   value: 'master'
+                                }
+                            };
+                }
+            }
+
+            window.customElements.define( AfBranches.is, AfBranches );
+            return AfBranches;
+        });
     </script>
 </dom-module>
