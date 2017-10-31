@@ -10,45 +10,36 @@
 
     <script src="../bower_components/marked/marked.min.js"  ></script>
     <script>
-
+        let useCDN = location.href.includes('usecdn')
+        ,   cdn_root = 'https://cdn.xml4jquery.com/ajax/libs/components'
+        ,   vaadin_root         =!useCDN ? '/components'        : `${cdn_root}` // 'https://cdn.vaadin.com/vaadin-elements/latest'
+        ,   webcomponent_root   =!useCDN ? "/components"        : `${cdn_root}/webcomponentsjs`
+        ,   polymer_root        =!useCDN ? "/components/polymer": `${cdn_root}/polymer`
+        ,   iron_root           =!useCDN ? '/components'        : `${cdn_root}` ;
+        var dojoConfig ={ async: true
+                        , packages:
+                            [ { name: "af", location: "/af/ApiFusion.org-folders" }
+//                            , { name: "iron-demo-helpers", location: "/components/iron-demo-helpers" }
+                            , { name: "webcomponentsjs", location: webcomponent_root }
+                            , { name: "polymer", location: polymer_root }
+                            ]
+                        , aliases:  [ [ "link-import"  , "af/ui/AMD/link-import" ]
+                                    , [ /(vaadin-)(.*)/, (m,x,y)=>`${vaadin_root}/${x}${y}` ]
+                                    , [ /(iron-)(.*)/  , (m,x,y)=>`${iron_root}/${x}${y}`   ]
+                                    ]
+                        , deps: []
+                        };
     </script>
-    <script src="https://ajax.googleapis.com/ajax/libs/dojo/1.12.2/dojo/dojo.js" ></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/dojo/1.12.2/dojo/dojo.js.uncompressed.js" ></script>
     <script>
-// todo CDN samples
-// <link href='https://cdn.vaadin.com/vaadin-elements/latest/vaadin-grid/vaadin-grid.html' rel='import'>
-// https://polygit.org/
-// if conflict between CDNs, could be base href set dynamically and loads grouped by CDN hosts
-
-define('link-import',function(  ) {
-    return  {   load: function (name, req, onload, config)
-                {
-                    // req has the same API as require()
-                    var mid = name.split('|')[0]
-                    ,   url = req.toUrl( name )
-                    ,   el = document.createElement('link');
-                    el.setAttribute('rel','import');
-                    el.setAttribute('href',url);
-                    var orig_name = name.substring( name.lastIndexOf('/')+1, name.lastIndexOf('.') );
-                    if( name.includes('nowait') )
-                        onload( orig_name );// todo on link loaded event
-                    else
-                        window.customElements.whenDefined(orig_name).then( value =>
-                        {
-                            onload(orig_name);
-                            console.log(`${orig_name} - ${url} - ${value}` );
-                        }, (err)=>console.log(`${orig_name} - ERROR ${err} - ${url}` ) );
-                    document.head.appendChild(el);
-                }
-            };
-});
-require([   "/components/webcomponentsjs/webcomponents-lite.js"
-        ,   "link-import!/components/iron-demo-helpers/demo-pages-shared-styles.html|nowait"
-        ,   "link-import!/components/iron-demo-helpers/demo-snippet.html"
-        ,   "link-import!../af-branches.html"
+require([   "webcomponentsjs/webcomponents-lite"
+        ,   "link-import!iron-demo-helpers/demo-pages-shared-styles.html|onload"
+        ,   "link-import!iron-demo-helpers/demo-snippet.html"
+        ,   "link-import!../af-branches.html|whenDefined"
         ], (a,b,c,d)=> console.log(` ${a} ${b} ${c} ${d}`) );
     </script>
-    <script src="/components/webcomponentsjs/webcomponents-lite.js"></script>
 
+    <!--<script src="/components/webcomponentsjs/webcomponents-lite.js"></script>-->
     <!--<link rel="import" href="/components/iron-demo-helpers/demo-pages-shared-styles.html">-->
     <!--<link rel="import" href="/components/iron-demo-helpers/demo-snippet.html">-->
     <!--<link rel="import" href="../af-branches.html">-->
@@ -61,6 +52,7 @@ require([   "/components/webcomponentsjs/webcomponents-lite.js"
 <body>
 <div class="vertical-section-container centered">
     <h3>Basic af-branches demo</h3>
+    <a href="index.html">local</a> | <a href="index.html?usecdn">CDN</a>
     <demo-snippet>
         <template>
             <af-branches

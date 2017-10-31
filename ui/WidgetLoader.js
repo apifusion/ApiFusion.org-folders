@@ -21,7 +21,9 @@ define(["jquery", "require"],function ( $, require )
             return;
         $el.addClass( cls );
         require([mid], function CreateWidget( Widget )
-        {   try
+        {   if( typeof Widget !== 'function' )
+                return;
+            try
             {   let o = JSON.parse( $el.attr("data-af-param") || '{"skip":[""]}' );
                 for( let k in o )
                     if( o[k] && o[k].map )

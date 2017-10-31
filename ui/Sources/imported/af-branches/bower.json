@@ -7,7 +7,8 @@
     "vaadin-material-theme": "vaadin/vaadin-material-theme#^0.3.0",
     "vaadin-combo-box": "vaadin/vaadin-combo-box#^3.0.0",
     "iron-ajax": "polymerelements/iron-ajax#^2.0.5",
-    "vaadin-valo-theme": "vaadin/vaadin-valo-theme#^0.3.2"
+    "vaadin-valo-theme": "vaadin/vaadin-valo-theme#^0.3.2",
+    "requirejs": "^2.3.5"
   },
   "devDependencies": {
     "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",
