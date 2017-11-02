@@ -11,8 +11,7 @@ define('link-import', function()
                         if( name.includes('|whenDefined') )
                             window.customElements.whenDefined( orig_name )
                             .then( function()
-                            {
-                                try{ onload( req( orig_name ) ); }
+                            {   try{ onload( req( orig_name ) ); }
                                 catch( ex ){   onload(orig_name); }
                             });
                         else

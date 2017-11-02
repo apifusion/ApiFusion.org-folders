@@ -9,9 +9,26 @@
         <style>
             :host { display: block; }
         </style>
-        <iron-ajax url="[[wgScriptPath]]/api.php?format=json&action=parse&prop=sections&page=Sources:[[wgPageName]]" last-response="{{sections}}" auto></iron-ajax>
-        <vaadin-combo-box label="Branch" items="[[sections.parse.sections]]" item-value-path="line" item-label-path="line"></vaadin-combo-box>
+        <!-- 1. get list of sections http://localhost/af/wiki/api.php?format=json&action=parse&prop=sections&page=Sources:ApiFusion.org/Sources/git-restful -->
+        <iron-ajax url="[[wgScriptPath]]/api.php?format=json&action=parse&prop=sections&page=Sources:[[wgPageName]]"
+                   last-response="{{srcSections}}"
+                   on-response="handleSrcResponse"
+                   auto
+                ></iron-ajax>
+        <iron-ajax url="[[wgScriptPath]]/api.php?format=json&action=parse&prop=sections&page=Sources:[[wgPageName]]"
+                   last-response="{{impSections}}"
+                   on-response="handleImpResponse"
+                   auto
+                ></iron-ajax>
 
+        <!-- 2. get section by # http://localhost/af/wiki/api.php?format=json&action=parse&prop=wikitext&&section=1&page=Sources:ApiFusion.org/Sources/git-restful -->
+        <iron-ajax url="[[wgScriptPath]]/api.php?format=json&action=parse&prop=wikitext&section=[[srcSectionNum]]&page=Sources:[[wgPageName]]"          on-response="onSrcSection" auto></iron-ajax>
+        <iron-ajax url="[[wgScriptPath]]/api.php?format=json&action=parse&prop=wikitext&section=[[impSectionNum]]&page=Implementation:[[wgPageName]]"   on-response="onImpSection" auto></iron-ajax>
+
+        <vaadin-combo-box label="Branch" items="[[srcSections.parse.sections]]" item-value-path="line" item-label-path="line"></vaadin-combo-box>
+        [[srcSection]]
+        <hr/>
+        [[impSection]]
     </template>
 
     <script>
@@ -20,7 +37,7 @@
                                 ,   "link-import!iron-ajax/iron-ajax.html"
                                 ,   "link-import!vaadin-material-theme/vaadin-text-field.html" //,   "link-import!vaadin-valo-theme/vaadin-combo-box.html"
                                 ,   "link-import!vaadin-combo-box/vaadin-combo-box.html"
-                                ],(polymerElement)=>
+                                ],()=>
         {
 
 /**
@@ -46,6 +63,11 @@ class AfBranches extends Polymer.Element
                     }
                 };
     }
+    onSrcSection( data ){   this.srcSection = data.detail.response.parse.wikitext['*'] }
+    onImpSection( data ){   this.impSection = data.detail.response.parse.wikitext['*'] }
+    handleSrcResponse( data ){   this.srcSectionNum = this.s2i( data ) }
+    handleImpResponse( data ){   this.impSectionNum = this.s2i( data ) }
+    s2i( data ){ return data.detail.response.parse.sections.find( el => el.line === this.branch ).number }
 }
 
             window.customElements.define( AfBranches.is, AfBranches );
