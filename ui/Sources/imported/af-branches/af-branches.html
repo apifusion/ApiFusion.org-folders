@@ -10,18 +10,19 @@
             :host { display: block; }
         </style>
         <!-- 1. get list of sections http://localhost/af/wiki/api.php?format=json&action=parse&prop=sections&page=Sources:ApiFusion.org/Sources/git-restful -->
-        <iron-ajax last-response="{{srcSections}}" url="[[wgScriptPath]]/api.php?format=json&action=parse&prop=sections&page=Sources:[[wgPageName]]" auto ></iron-ajax>
-        <iron-ajax last-response="{{impSections}}" url="[[wgScriptPath]]/api.php?format=json&action=parse&prop=sections&page=Sources:[[wgPageName]]" auto ></iron-ajax>
+        <iron-ajax  on-response="onBranchesLoaded"
+                    last-response="{{srcSections}}" url="[[wgScriptPath]]/api.php?format=json&action=parse&prop=sections&page=Sources:[[wgPageName]]" auto ></iron-ajax>
+        <iron-ajax  last-response="{{impSections}}" url="[[wgScriptPath]]/api.php?format=json&action=parse&prop=sections&page=Sources:[[wgPageName]]" auto ></iron-ajax>
 
         <!-- 2. get section by # http://localhost/af/wiki/api.php?format=json&action=parse&prop=wikitext&&section=1&page=Sources:ApiFusion.org/Sources/git-restful -->
-        <iron-ajax last-response="{{srcSection}}" url="[[wgScriptPath]]/api.php?format=json&action=parse&prop=text&section=[[s2n(srcSections)]]&page=Sources:[[wgPageName]]"        auto></iron-ajax>
-        <iron-ajax last-response="{{impSection}}" url="[[wgScriptPath]]/api.php?format=json&action=parse&prop=text&disableeditsection=true&disabletoc=true&section=[[s2n(impSections)]]&page=Implementation:[[wgPageName]]" auto></iron-ajax>
+        <iron-ajax last-response="{{srcSection}}" url="[[wgScriptPath]]/api.php?format=json&action=parse&prop=text&section=[[s2n(srcSections,branch)]]&page=Sources:[[wgPageName]]"        auto></iron-ajax>
+        <iron-ajax last-response="{{impSection}}" url="[[wgScriptPath]]/api.php?format=json&action=parse&prop=text&disableeditsection=true&disabletoc=true&section=[[s2n(impSections,branch)]]&page=Implementation:[[wgPageName]]" auto></iron-ajax>
 
-        <vaadin-combo-box label="Branch" items="[[srcSections.parse.sections]]" item-value-path="line" item-label-path="line"></vaadin-combo-box>
+        <vaadin-combo-box value="{{branch}}" label="Branch" items="[[srcSections.parse.sections]]" item-value-path="line" item-label-path="line"></vaadin-combo-box>
 
+        <h2>Sources</h2>
         <element inner-h-t-m-l="[[s2t(srcSection)]]"></element>
-
-        <hr/>
+        <h2>Generated docs</h2>
         <element inner-h-t-m-l="[[s2t(impSection)]]"></element>
 
     </template>
@@ -37,7 +38,7 @@
 
 /**
  * `af-branches`
- * Version control Branches selector out of Implementation namespace headers of ApiFusion git source import mediawiki page
+ * Version control Branches selector out of Sources and Implementation namespace of ApiFusion git source import mediawiki page
  *
  * @customElement
  * @polymer
@@ -45,6 +46,9 @@
  */
 class AfBranches extends Polymer.Element
 {
+    get defaultBranch(){ return  this._defaultBranch || "master" }
+    set defaultBranch(b){ return this._defaultBranch = b }
+
     static get is() { return 'af-branches'; }
     static get properties()
     {
@@ -58,9 +62,16 @@ class AfBranches extends Polymer.Element
                     }
                 };
     }
-    s2n( x ){ return x ? x.parse.sections.find( el => el.line === this.branch ).number : 1 }
+    s2n( x, branch ){ return x ? (x.parse.sections.find( el => el.line === branch ) || {number:1}).number : 1 }
     s2t( x ){ return x && x.parse && this.skipTitle( x.parse.text['*'] ) || ""    }
     skipTitle( x ){ return x.substring(x.indexOf('</h1>')+6) }
+    onBranchesLoaded( d )
+    {
+        const s = d.detail.response.parse.sections.map( e=>e.line );
+        if( !s.includes( this.defaultBranch ) && s.length )
+            this.defaultBranch = s[0].line;
+        this.branch = s.includes( this.branch ) ? this.branch : this.defaultBranch;
+    }
 }
 
             window.customElements.define( AfBranches.is, AfBranches );
