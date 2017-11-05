@@ -19,6 +19,7 @@
         <iron-ajax last-response="{{impSection}}" url="[[wgScriptPath]]/api.php?format=json&action=parse&prop=text&disableeditsection=true&disabletoc=true&section=[[s2n(impSections,branch)]]&page=Implementation:[[wgPageName]]" auto></iron-ajax>
 
         <vaadin-combo-box value="{{branch}}" label="Branch" items="[[srcSections.parse.sections]]" item-value-path="line" item-label-path="line"></vaadin-combo-box>
+        <app-localstorage-document key="af-branch" data="{{branch}}"></app-localstorage-document> - [[branch]]
 
         <h2>Sources</h2>
         <element inner-h-t-m-l="[[s2t(srcSection)]]"></element>
@@ -33,6 +34,7 @@
                                 ,   "link-import!iron-ajax/iron-ajax.html"
                                 ,   "link-import!vaadin-material-theme/vaadin-text-field.html" //,   "link-import!vaadin-valo-theme/vaadin-combo-box.html"
                                 ,   "link-import!vaadin-combo-box/vaadin-combo-box.html"
+                                ,   "link-import!app-storage/app-localstorage/app-localstorage-document.html"
                                 ],()=>
         {
 
@@ -68,9 +70,9 @@ class AfBranches extends Polymer.Element
     onBranchesLoaded( d )
     {
         const s = d.detail.response.parse.sections.map( e=>e.line );
-        if( !s.includes( this.defaultBranch ) && s.length )
-            this.defaultBranch = s[0].line;
-        this.branch = s.includes( this.branch ) ? this.branch : this.defaultBranch;
+//        if( !s.includes( this.defaultBranch ) && s.length )
+//            this.defaultBranch = s[0].line;
+//        this.branch = s.includes( this.branch ) ? this.branch : this.defaultBranch;
     }
 }
 
