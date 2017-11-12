@@ -10,8 +10,7 @@
             :host { display: block; }
         </style>
         <!-- 1. get list of sections http://localhost/af/wiki/api.php?format=json&action=parse&prop=sections&page=Sources:ApiFusion.org/Sources/git-restful -->
-        <iron-ajax  on-response="onBranchesLoaded"
-                    last-response="{{srcSections}}" url="[[wgScriptPath]]/api.php?format=json&action=parse&prop=sections&page=Sources:[[wgPageName]]" auto ></iron-ajax>
+        <iron-ajax  last-response="{{srcSections}}" url="[[wgScriptPath]]/api.php?format=json&action=parse&prop=sections&page=Sources:[[wgPageName]]" auto ></iron-ajax>
         <iron-ajax  last-response="{{impSections}}" url="[[wgScriptPath]]/api.php?format=json&action=parse&prop=sections&page=Sources:[[wgPageName]]" auto ></iron-ajax>
 
         <!-- 2. get section by # http://localhost/af/wiki/api.php?format=json&action=parse&prop=wikitext&&section=1&page=Sources:ApiFusion.org/Sources/git-restful -->
@@ -67,13 +66,6 @@ class AfBranches extends Polymer.Element
     s2n( x, branch ){ return x ? (x.parse.sections.find( el => el.line === branch ) || {number:1}).number : 1 }
     s2t( x ){ return x && x.parse && this.skipTitle( x.parse.text['*'] ) || ""    }
     skipTitle( x ){ return x.substring(x.indexOf('</h1>')+6) }
-    onBranchesLoaded( d )
-    {
-        const s = d.detail.response.parse.sections.map( e=>e.line );
-//        if( !s.includes( this.defaultBranch ) && s.length )
-//            this.defaultBranch = s[0].line;
-//        this.branch = s.includes( this.branch ) ? this.branch : this.defaultBranch;
-    }
 }
 
             window.customElements.define( AfBranches.is, AfBranches );

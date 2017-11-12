@@ -14,6 +14,7 @@ var dojoConfig =
     , { name: "acl", location: "/af/af-acl" }
     , { name: "webcomponentsjs", location: webcomponent_root }
     , { name: "polymer", location: polymer_root }
+    , { name: "app-storage", location: iron_root+"/app-storage" }
     ]
 , aliases:  [ [ "link-import"  , isLocal ? "/components/link-import/link-import.js" : "../../link-import.js" ]
             , [ /(vaadin-)(.*)/, function(m,x,y){ return vaadin_root+'/'+x+y } ]
