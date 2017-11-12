@@ -74,9 +74,9 @@ $onSubmit( 2, ()=>
 
 $onSubmit( 3, ()=>
 {
-    afSourcesRoot = input('af-sources-root').val();
+    afSourcesRoot = val('af-sources-root');
 //    enableStep( 4 );
-    processSource( val( "sources-folder-to-import") ).then( ready, ready );
+    processSource( val( "sources-folder-to-import"), true ).then( ready, ready );
     function ready( x )
         {   poolCreationQueue.handle = setInterval( poolCreationQueue, 1000 );   }
 });
@@ -158,31 +158,35 @@ getSections( nsAndTitle )
 source2Af( sourcePath )
 {
     var prExp   = afSourcesRoot.includes("${sourcePath}") || !sourcePath || sourcePath === '/'
-                ? `${afSourcesRoot}`
-                : `${afSourcesRoot}/${sourcePath}`
+                ? afSourcesRoot
+                //? `${afSourcesRoot}`
+                : sourcePath.charAt(0) === '/'
+                      ? `${afSourcesRoot}${sourcePath}`
+                      : `${afSourcesRoot}/${sourcePath}`
     ,   pr = eval('`'+prExp +'`');
     
-    return pr.endsWith('/') ? pr.substring(0,pr.length-1): pr;
+    return pr.endsWith('/') ? pr.slice(0,-1): pr;
 }
     function
-processSource( sourcePath /** sourcePath to fill creationQueue from source tree */ )
+processSource( sourcePath /** sourcePath to fill creationQueue from source tree */ , isFinal )
 {
     console.log( 'processSource', sourcePath );
     var pr = source2Af( sourcePath );
     return $.getJSON( sourcePath ? `${gitRestfulUrl}/projects/${lockedRepo}/${sourcePath}`: `${gitRestfulUrl}/projects/${lockedRepo}`
         , a=>
         {   a.forEach( r=>
-            {   r.sourcePath =!sourcePath 
-                             ? ''
-                             : sourcePath === '/' 
-                                ? r.name 
-                                : sourcePath.endsWith('/') 
+            {
+                if( isFinal )
+                    r.sourcePath = sourcePath;
+                else
+                    r.sourcePath = sourcePath === '/'
+                                ? r.name
+                                : sourcePath.endsWith('/')
                                     ? `${sourcePath}${r.name}`
                                     : `${sourcePath}/${r.name}`;
                 r.title = source2Af( r.sourcePath );
                 t2a[ r.sourcePath.toLowerCase() ] = r;
                 $('input[name=pages-to-create]').val( creationQueue.push(r) );
-
                 if( r.isDirectory )
                     processSource( r.sourcePath+'/' );
             });
@@ -191,28 +195,32 @@ processSource( sourcePath /** sourcePath to fill creationQueue from source tree 
     function
 renderWiki( r )
 {
-    const sourcePath = r.sourcePath;
+    let sourcePath = r.sourcePath;
     console.log( 'renderWiki ' + sourcePath );
+    $.getJSON( sourcePath ? `${gitRestfulUrl}/projects/${lockedRepo}/${sourcePath}`: `${gitRestfulUrl}/projects/${lockedRepo}`
+    , data=>
+    {
+        if( data[0].isDirectory  && sourcePath.slice(-1) != '/' )
+            sourcePath += '/';
 
-    createWikiPage( 'Sources', r, getRepoLink(r), lockedBranch )
-    .$then( O=> createWikiPage( '',r,'{{ApiFusion.org/Sources/ApiFusion.org-folders/ui/Sources/imported}}','Generated') )
-    .$then( O=> $.getJSON(`${gitRestfulUrl}/docs/${lockedRepo}/${sourcePath}`
-                    ,   b =>
-                    {   iteration();
-                        function iteration()
-                        {   if( !b.length )
-                                return;
-                            let f = b.pop();
-                            console.log( "processing docs", f );
-                            $.get(`${gitRestfulUrl}${f.href}`) // todo check for protocol or port#
-                            .done(  html=>
-                            {   console.log(html);
-                                return createWikiPage( 'Implementation', r, html, lockedBranch )
-                            }).always( iteration );
-                        }
-                    }))
-    .$then( O=>r, err=> $.extend( r, {status:'error',info:err} ) )
-    .$then( onStatusChange );
+        createWikiPage( 'Sources', r, getRepoLink(r), lockedBranch )
+        .$then( O=> createWikiPage( '',r,'{{ApiFusion.org/Sources/ApiFusion.org-folders/ui/Sources/imported}}','Generated') )
+        .$then( O=> $.getJSON(`${gitRestfulUrl}/docs/${lockedRepo}/${sourcePath}`
+                        ,   b =>
+                        {   let buf = "";
+                            iteration();
+                            function iteration()
+                            {   if( !b.length )
+                                    return createWikiPage( 'Implementation', r, buf, lockedBranch )
+                                let f = b.pop();
+                                console.log( "processing docs", f );
+                                $.get(`${gitRestfulUrl}${f.href}`) // todo check for protocol or port#
+                                .done(  html=> buf += html + "\n<br/>\n" ).always( iteration );
+                            }
+                        }))
+        .$then( O=>r, err=> $.extend( r, {status:'error',info:err} ) )
+        .$then( onStatusChange );
+    });
 }
     function
 getRepoLink( r )
@@ -230,41 +238,6 @@ onStatusChange( r )
     if( r.status === 'error' )
         status += ` <i>${r.info}</i>`;
     return $('.step4 table').append(`<tr title="${r.title}"><td><a href="${wikiUrl}/index.php/${r.title}">${r.title}</a></td><td>${type}</td><td>${status}</td></tr>`);
-}
-    function
-renderWiki_0( sourcePath )
-{
-    console.log( 'processRoot ' + sourcePath );
-    var pr = source2Af( sourcePath );
-    return $.getJSON( `${gitRestfulUrl}/projects/${lockedRepo}`
-    , a=>
-    {   a.forEach( r=>
-        {   r.name = r.sourcePath = '';
-            r.title= pr;
-            t2a[ r.sourcePath.toLowerCase() ] = r;
-
-            createWikiPage( '',r,'{{ApiFusion.org/Sources/ApiFusion.org-folders/ui/Sources/imported}}','Generated')
-            .$then( ()=>
-                $.getJSON(`${gitRestfulUrl}/docs/${lockedRepo}`
-                ,   b =>
-                {   iteration();
-                    function iteration()
-                    {   if( !b.length )
-                            return;
-                        let f = b.pop();
-                        console.log( "processing", f );
-                        $.get(`${gitRestfulUrl}${f.href}`) // todo check for protocol or port#
-                        .done(  html=>
-                        {   console.log(html);
-                            return createWikiPage( 'Implementation', r, html, lockedBranch )
-                        }).always( iteration );
-                    }
-                }));
-        });
-
-//         return $.post( `${wikiUrl}/api.php`,`action=query&prop=info&format=xml&titles=${pr}`
-//                      , x => $.Xml(x).XPath('//page').$then( processPages ) );
-    });
 }
     function
 processPages( pages )
