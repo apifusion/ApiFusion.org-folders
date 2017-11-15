@@ -7,6 +7,7 @@ require([ "dojo/query"	, "dojo/request",	"dojo/promise/all"	,	"dojo/_base/array"
 	var DEFNS = 'Default'
 	,	curNS	= (mw && mw.config.get( 'wgCanonicalNamespace' )) || DEFNS
 	,	afRoot	= require.toUrl('af')+'/'
+	,	phpRoot = mw.config.get('wgScriptPath')+"/../ApiFusion.org-folders/php/"
 	,	pageTitle	= (mw && mw.config.get( 'wgTitle' ) ) || ''
 	,	pages		= pageTitle.split('/');
 
@@ -15,7 +16,7 @@ require([ "dojo/query"	, "dojo/request",	"dojo/promise/all"	,	"dojo/_base/array"
 		document.body.className += " claro";
 
 		all([ request( afRoot+"ns/Namespaces.xml"				, { handleAs:"xml"	} )
-			, request( afRoot+"php/PageNS.php?title="+pageTitle	, { handleAs:"json"	} ) 
+			, request( phpRoot+"PageNS.php?title="+pageTitle	, { handleAs:"json"	} )
 			]).then( populateNS );
 		
 
@@ -33,7 +34,7 @@ require([ "dojo/query"	, "dojo/request",	"dojo/promise/all"	,	"dojo/_base/array"
 createPagesTree(cssSelector, getRoot, curPath)
 {
     var model = new JsonRest(
-	{	target:afRoot+"php/Pages.php?title="
+	{	target:phpRoot+"Pages.php?title="
 	,	_getTarget: function(id){ return this.target+id; }
 	,	idProperty: "page_title"
 	,	mayHaveChildren: function(o){  return o.childrenCount*1 >0; }

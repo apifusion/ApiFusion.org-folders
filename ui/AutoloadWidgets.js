@@ -8,7 +8,8 @@
  */
 define(["jquery", "require", "./WidgetLoader"],function ( $, require, WidgetLoader )
 {   "use strict";
-    let MIDs= ["af/ui/List/Siblings/Namespace","af/ui/List/Children" ];
+    let timeStamp           = Date.now()
+    ,   MIDs= ["af/ui/List/Siblings/Namespace.js?z="+timeStamp,"af/ui/List/Children" ];
 
     $( ()=> $("*[data-af-mid='af/ui/AutoloadWidgets']").length || AutoloadWidgets() );
     return AutoloadWidgets;

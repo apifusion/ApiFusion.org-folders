@@ -13,6 +13,7 @@ define(['jquery'    , "dojo/request",	"dojo/promise/all",	"dojo/_base/array"
         let skip = []
         ,   $w  = $(node)
         ,   afRoot	= (mw && mw.config.get( 'wgScriptPath' ) || '.')+"/../ApiFusion.org-folders/"
+	    ,	phpRoot = mw.config.get('wgScriptPath')+"/../ApiFusion.org-folders/php/"
         ,   DEFNS = 'Default'
         ,   wp  = mw.config.get('wgArticlePath')
         ,   cp  = mw.config.get('wgTitle')
@@ -26,8 +27,8 @@ define(['jquery'    , "dojo/request",	"dojo/promise/all",	"dojo/_base/array"
                 skip = [ mw.config.get('wgCanonicalNamespace') || DEFNS ];
         }
 
-        all([ request( afRoot+"ns/Namespaces.xml"				, { handleAs:"xml"	} )
-            , request( afRoot+"php/PageNS.php?title="+pg	    , { handleAs:"json"	} )
+        all([ request( afRoot+"ns/Namespaces.xml"			, { handleAs:"xml"	} )
+            , request( phpRoot+"PageNS.php?title="+pg	    , { handleAs:"json"	} )
         ]).then( populateNS );
 
             function
